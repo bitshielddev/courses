@@ -1,0 +1,5 @@
+{
+  "title": "C / Field Manual",
+  "summary": "An interactive C17 course for programmers who know Python, PHP or TypeScript, with a C compiler that runs in the browser.",
+  "publish": ["index.html", "lessons"]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "bitshield-courses",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive programming courses (C / Field Manual) that share one lesson engine. Each course is a folder in courses/.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "new-course": "node tools/new-course.mjs",
+    "check": "node tools/verify.cjs",
+    "build": "node tools/build.mjs",
+    "preview": "node tools/cloudflare.mjs preview",
+    "deploy:dry-run": "node tools/cloudflare.mjs dry-run",
+    "deploy": "node tools/cloudflare.mjs deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.164.0"
+  }
+}

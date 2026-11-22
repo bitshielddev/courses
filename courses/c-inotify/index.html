@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Build a Linux file-change monitor in C on NixOS and use it to investigate what Neovim does when you save.">
+    <meta name="theme-color" content="#17211d">
+    <title>Anatomy of a Neovim save · C / Field Manual</title>
+    <link rel="canonical" href="https://c-inotify.courses.bitshield.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Anatomy of a Neovim save · C / Field Manual">
+    <meta property="og:description" content="Build a Linux file-change monitor in C on NixOS and use it to investigate what Neovim does when you save.">
+    <meta property="og:url" content="https://c-inotify.courses.bitshield.dev/">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%2317211d'/%3E%3Cpath d='m9 13 7 7-7 7m12 0h10' fill='none' stroke='%23bff2cb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../../engine/core/styles.css">
+    <script defer src="lessons/01-anatomy-of-a-save.js"></script>
+    <script defer src="../../engine/core/ui.js"></script>
+    <script defer src="../../engine/core/widgets.js"></script>
+    <script defer src="../../engine/lab/notebook.js"></script>
+    <script defer src="../../engine/core/app.js"></script>
+  </head>
+  <body data-mode="lab" data-storage-key="c-field-manual-inotify-v1">
+    <a class="skip-link" href="#lesson-title">Skip to the lesson</a>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Anatomy of a Neovim save, first lesson">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 6 6-6 6m9 0h7"/></svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-name">C <span class="brand-divider">/</span> Field Manual</span>
+          <span class="brand-subtitle">Project 01 · Neovim saves</span>
+        </span>
+      </a>
+      <div class="topbar-meta">
+        <span class="version-tag"><span class="version-dot" aria-hidden="true"></span>NixOS</span>
+        <div class="top-progress">
+          <span id="top-progress-label">0 lessons</span>
+          <span class="top-progress-track" aria-hidden="true"><span id="top-progress-fill" class="top-progress-fill"></span></span>
+        </div>
+        <button class="mobile-menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false">Contents</button>
+      </div>
+    </header>
+
+    <div class="app-shell">
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-inner">
+          <div class="sidebar-heading">
+            <h2 id="contents-title" class="sidebar-title">Anatomy of a Neovim save</h2>
+            <span id="lesson-count" class="sidebar-eyebrow"></span>
+          </div>
+          <nav id="chapter-list" class="chapter-list" aria-labelledby="contents-title"></nav>
+          <a class="course-link" href="../c-intro/index.html" data-published-href="https://c-intro.courses.bitshield.dev/">
+            <small>C / Field Manual</small>
+            <span><span aria-hidden="true">←</span> Foundation tutorial</span>
+          </a>
+          <div class="sidebar-progress">
+            <div class="sidebar-progress-heading">
+              <span>Project progress</span>
+              <span id="sidebar-progress-label">0%</span>
+            </div>
+            <div id="sidebar-progress-bar" class="sidebar-progress-track" role="progressbar" aria-label="Project progress" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+              <span id="sidebar-progress-fill" class="sidebar-progress-fill"></span>
+            </div>
+            <p class="progress-caption" id="progress-caption"></p>
+          </div>
+        </div>
+      </aside>
+
+      <main id="main-content" class="main-content">
+        <header class="lesson-header" id="lesson-header">
+          <div class="lesson-breadcrumb">
+            <span id="lesson-category"></span>
+            <span aria-hidden="true">/</span>
+            <span id="lesson-kicker" class="lesson-kicker"></span>
+          </div>
+          <h1 class="lesson-title" tabindex="-1" id="lesson-title">Anatomy of a Neovim save</h1>
+          <p id="lesson-summary" class="lesson-summary"></p>
+          <div id="lesson-meta" class="lesson-meta"></div>
+        </header>
+        <div class="lesson-tabs" role="tablist" aria-label="Lesson activities" id="lesson-tabs"></div>
+        <div id="lesson-stage" class="lesson-layout" role="tabpanel" tabindex="-1"></div>
+        <footer id="lesson-footer" class="lesson-footer"></footer>
+        <noscript><p>Enable JavaScript in your browser to take the interactive course.</p></noscript>
+      </main>
+    </div>
+  </body>
+</html>

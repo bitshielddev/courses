@@ -1,0 +1,69 @@
+# C / Field Manual courses
+
+Interactive programming courses that share one lesson engine. Each course is a static site on its own Cloudflare Worker and subdomain. Every course opens straight from disk (`file://`) as well.
+
+| Course | Mode | Live | Local |
+| --- | --- | --- | --- |
+| [C / Field Manual](courses/c-intro/README.md): C17 for programmers who know Python, PHP or TypeScript. 20 lessons with questions and graded challenges. | compiler | https://c-intro.courses.bitshield.dev | [index.html](courses/c-intro/index.html) |
+| [Anatomy of a Neovim save](courses/c-inotify/README.md): systems project 01. Build an inotify monitor in C on NixOS and use it to find out what `:w` does. | lab | https://c-inotify.courses.bitshield.dev | [index.html](courses/c-inotify/index.html) |
+
+A course is in one of two **modes**, set by `data-mode` on its page's `<body>`:
+
+- **compiler**: C compiles and runs in the browser with a bundled WebAssembly Clang. Lessons have runnable cells, predict-the-output questions and challenges graded by tests.
+- **lab**: the practical work happens on the learner's Linux machine. The **Linux lab** tab gives instructions, checks to tick and a notebook saved in the browser. The compiler isn't loaded.
+
+## Layout
+
+```
+courses/<id>/          one folder per course; <id> is also its Worker name and subdomain
+  index.html           the page: loads its lessons, then the engine from ../../engine/
+  lessons/NN-*.js      one script per part, each pushing lessons onto window.C_LESSONS
+  course.json          title, summary and the files the build publishes
+  wrangler.jsonc       the Worker and its custom domain
+  checks.cjs           optional browser checks that only this course needs
+  README.md            notes and deployment history (not published)
+  lab/ …               anything else the course publishes, listed in course.json
+engine/                the shared lesson engine; each course publishes the modules it loads
+  core/                page logic, markup helpers, figures and styles (every course)
+  compiler/            in-browser C compiler and challenge test driver (compiler courses)
+  lab/                 Linux lab notebook (lab courses)
+public/                404 page, headers, health check and robots.txt, copied into every course
+tools/
+  courses.cjs          finds courses and checks their settings agree
+  new-course.mjs       creates a course folder with a sample lesson that passes the checks
+  verify.cjs           checks courses in headless Chrome
+  build.mjs            copies courses into dist/<id>/
+  cloudflare.mjs       runs Wrangler for one course: preview, dry run or deploy
+  templates/           the sample lessons new-course.mjs starts from
+docs/                  deployment guide
+dist/<id>/             build output (not committed)
+```
+
+The build rewrites `../../engine/` to `engine/` and points cross-course links at their published addresses, so each course deploys on its own. `tools/courses.cjs` stops the build and the checks if two courses share a Worker, domain or storage key. It also stops them if a page loads a missing file or a cross-course link goes to the wrong address.
+
+## Commands
+
+Commands that take a course take its id after `--`. `check` and `build` without one cover every course.
+
+```bash
+npm run check                          # every course; needs Google Chrome
+npm run check -- c-inotify             # one course
+node tools/verify.cjs c-intro --native # also build each program with the system clang under ASan and UBSan
+npm run build -- c-intro               # dist/c-intro/
+npm run preview -- c-intro             # served by Wrangler on http://localhost:8787
+npm run deploy:dry-run -- c-intro      # validate the upload; publishes nothing
+npm run deploy -- c-intro              # publish (see docs/deploy-cloudflare.md)
+```
+
+## Adding a course
+
+```bash
+npm run new-course -- c-sockets --mode lab --title "Talking over sockets" --summary "One sentence for search results."
+npm run check -- c-sockets
+```
+
+This creates `courses/c-sockets/` with one sample lesson that already passes the checks. Replace that lesson with real ones. Claude Code has a project skill for the whole process, from planning the lessons to the first deploy: [.claude/skills/create-course](.claude/skills/create-course/SKILL.md).
+
+## Deploying
+
+See [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md).

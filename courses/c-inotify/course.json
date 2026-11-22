@@ -1,0 +1,5 @@
+{
+  "title": "Anatomy of a Neovim save",
+  "summary": "Systems project 01: build a Linux file-change monitor in C on NixOS and use it to investigate what Neovim does when you save.",
+  "publish": ["index.html", "lessons", "lab"]
+}

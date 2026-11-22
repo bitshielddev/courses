@@ -1,0 +1,9 @@
+/health
+  Content-Type: text/plain; charset=utf-8
+
+# No file name here carries a content hash, so nothing gets a long cache lifetime.
+# Cloudflare's default (max-age=0, must-revalidate, with an ETag) makes a repeat
+# visit cost a 304 for each file, including the 23 MB compiler bundle.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

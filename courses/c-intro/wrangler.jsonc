@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "c-intro",
+  // The Workers runtime version. Set it when the project is created; change it on purpose, not on every deploy.
+  "compatibility_date": "2026-11-18",
+  // The course is static files, so this Worker is assets only: there is no "main" script.
+  // `npm run build -- c-intro` copies the course into dist/c-intro/, which `wrangler deploy` uploads.
+  // Use `npm run deploy -- c-intro`, which builds first. Paths here are relative to this file.
+  "assets": {
+    "directory": "../../dist/c-intro",
+    "html_handling": "auto-trailing-slash",
+    // Unknown paths get the course's 404.html (from public/) with a 404 status.
+    "not_found_handling": "404-page"
+  },
+  // A workers.dev URL for checking a deployment. Wrangler turns it off when routes are set unless this says otherwise.
+  "workers_dev": true,
+  // Deploying attaches the hostname as a Custom Domain: Cloudflare creates its DNS record and certificate
+  // in the bitshield.dev zone. This fails if the hostname already has a DNS record.
+  "routes": [{ "pattern": "c-intro.courses.bitshield.dev", "custom_domain": true }]
+}
