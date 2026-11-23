@@ -2,7 +2,7 @@
 
 What `engine/core/app.js` renders and `tools/verify.cjs` checks. Almost every field here is used by an existing lesson. To see one in context, search for it, for example `grep -n "track: true" courses/c-intro/lessons/*.js`.
 
-Contents: [Lesson files](#lesson-files) · [Lesson](#lesson) · [Blocks](#blocks) · [Figures](#figures) · [Questions](#questions) · [Challenges (compiler mode)](#challenges-compiler-mode) · [Labs (lab mode)](#labs-lab-mode) · [The browser compiler](#the-browser-compiler) · [What the verifier enforces](#what-the-verifier-enforces)
+Contents: [Lesson files](#lesson-files) · [Lesson](#lesson) · [Blocks](#blocks) · [Page settings](#page-settings) · [Figures](#figures) · [Questions](#questions) · [Challenges (compiler mode)](#challenges-compiler-mode) · [Labs (lab mode)](#labs-lab-mode) · [The browser compiler](#the-browser-compiler) · [Rust courses](#rust-courses) · [What the verifier enforces](#what-the-verifier-enforces)
 
 ## Lesson files
 
@@ -44,7 +44,7 @@ A lesson is complete when every question is answered correctly and every non-str
 
 `body`, callouts, `details` and challenge prompts all hold blocks. Blocks nest: a `run` cell inside a callout is still compiled and checked.
 
-**Prose** means paragraph strings, titles, summaries, takeaways, list items, table cells, callout strings, question text, options, `why`, `explain`, `hint`, trace `say` text, lab checks and test labels. Prose supports only `` `code` `` and `**bold**`. Anything else, links included, shows as literal text. Prose must be one line: a real newline in it fails the check. Code-like fields are exempt and may span lines: `run`, `code`, `shell`, `text`, `expect`, `answer`, `starter`, `solution`, `prelude`, `signature` and test `body`.
+**Prose** means paragraph strings, section titles, takeaways, list items, table cells, callout strings, question text, options, `why`, `explain`, `hint`, trace `say` text, lab checks and test labels. Prose supports only `` `code` `` and `**bold**`. Anything else, links included, shows as literal text. Prose must be one line: a real newline in it fails the check. A lesson's `title` and `summary`, and a note's `placeholder`, are shown as plain text: a backtick there appears as a backtick. Code-like fields are exempt and may span lines: `run`, `code`, `shell`, `text`, `expect`, `answer`, `starter`, `solution`, `prelude`, `signature` and test `body`.
 
 | Block | Renders as |
 | --- | --- |
@@ -53,7 +53,7 @@ A lesson is complete when every question is answered correctly and every non-str
 | `…, warns: true` | The cell is meant to produce a compiler warning; the verifier requires one. |
 | `…, varies: true` | The output differs between runs (addresses, for example), so it has no `expect`. |
 | `…, sizes: true` | The output depends on type sizes, which differ on 64-bit machines, so `--native` skips comparing stdout. |
-| `{ code: c`…` }` | Highlighted read-only C. With `name`, it gets a file label. In lab mode a named `code` block becomes a file card with a Copy button. |
+| `{ code: c`…` }` | Highlighted read-only code. With `name`, it gets a file label. In lab mode a named `code` block becomes a file card with a Copy button. It is highlighted as the page's language (see [Page settings](#page-settings)); `lang: 'python'` on the block chooses another, and an unknown name such as `'text'` or `'toml'` turns highlighting off. |
 | `{ shell: 'cmd', name: 'Terminal A · what it does' }` | A terminal command card with a Copy button. Name the terminal and the purpose. |
 | `{ text: '…' }` | Plain preformatted text, such as output or a diagram. |
 | `{ list: [...] }` and `{ steps: [...] }` | Bulleted and numbered lists of prose strings. |
@@ -68,6 +68,17 @@ A lesson is complete when every question is answered correctly and every non-str
 | `{ trace }`, `{ memory }`, `{ strip }`, `{ widget }` | Figures, described in the next section. |
 
 A callout's value is a string or an array of blocks, and it takes an optional `title` that replaces the default label. Use `tip: ['Text', { shell: '…', name: '…' }]` to put a command inside a callout.
+
+## Page settings
+
+A course whose subject is not C on Linux sets these on its page's `<body>`, beside `data-mode` and `data-storage-key`. All are optional, and `courses/lean-intro/index.html` uses all four.
+
+| Attribute | Effect | Default |
+| --- | --- | --- |
+| `data-language` | The language `code` blocks and question code are highlighted as. `engine/core/ui.js` has a grammar for each of `c`, `lean` and `python`; add a language there. | `c` |
+| `data-lab-title` | The name of a lab course's third tab, and of the button that opens it. | `Linux lab` |
+| `data-compare-label` | The heading of every `compare` callout. | `Coming from Python, PHP or TypeScript` |
+| `data-finished-label` | The note shown when every lesson is complete. | `Project complete` in a lab course, `Course complete` otherwise |
 
 ## Figures
 
@@ -105,7 +116,7 @@ Values can be a number or string shown as written (`7`, `"'B'"`, `0.5`), `'&id'`
   verify: true }   // optional: the verifier runs `code` and expects stdout to equal the right option, minus backticks
 ```
 
-Exactly one option has `ok`, and every option needs a `why`. `verify` compares the output the same way predict answers are compared: spaces at line ends and blank lines at the start and end are ignored, so a final `\n` doesn't matter. In a lab course a question's `code` is shown but never run, and `verify` is ignored.
+Exactly one option has `ok`, and every option needs a `why`. A question's `code` is highlighted as the page's language unless the question has a `lang` of its own. `verify` compares the output the same way predict answers are compared: spaces at line ends and blank lines at the start and end are ignored, so a final `\n` doesn't matter. In a lab course a question's `code` is shown but never run, and `verify` is ignored.
 
 **Select all**: `{ kind: 'multi', q, options: [{ t, ok?, why? }], explain?, hint? }`. At least one option is right, and not all of them are. `why` is optional. The feedback lists each option that has one as **Yes:** or **No:**.
 
@@ -174,6 +185,68 @@ The notebook keeps notes and ticks in the browser. Notes from earlier lessons ar
 ## The browser compiler
 
 Compiler courses use Clang 8.0.1 in a Web Worker, targeting 32-bit WebAssembly with WASI libc. The flags are `-std=c17 -Wall -Wextra -Wno-unused-parameter -Werror=implicit-function-declaration`. `int`, `long` and pointers are all 4 bytes; on the learner's Mac `long` and pointers are 8, so mark size-dependent cells with `sizes: true` and say so in a `native` callout. Stdin is empty, and there is no filesystem, network, threads or signals. Compiling may take 15 s and running 2.5 s. A timeout exits with 124. Memory is capped at 64 MiB.
+
+## Rust courses
+
+A compiler course whose `<body>` has `data-language="rust"` runs Rust instead of C. Everything above applies, with these differences. `courses/rust-intro` is the example.
+
+**How code runs.** The page loads `engine/rust/driver.js` and `runtime.js` in place of `engine/compiler/`. Run sends the editor's code to the Rust Playground (stable channel, 2024 edition, debug build) and shows what comes back. The checks never call the Playground: `tools/verify.cjs` starts `tools/rust-local.cjs`, a stand-in that answers in the same format with the `rustc` on this machine, and points the page at it. Programs run on a 64-bit machine, so `usize` and references are 8 bytes, as on the learner's own. Threads work. Stdin is empty and a program is stopped after about 10 seconds.
+
+**Lesson files** write Rust with ``const rs = String.raw;`` and ``rs`…` ``. Rust source has no backticks; the one thing to avoid inside a template is `${`. Name cells `something.rs`. For a C snippet inside a Rust course, use `{ code: c`…`, lang: 'c' }`.
+
+**Run cells.** A cell must compile without warnings, exit 0 and print exactly `expect`, unless one of these says otherwise:
+
+| Field | Meaning | The verifier requires |
+| --- | --- | --- |
+| `fails: 'E0382'` | The program is meant not to compile. Give the error code. For the few errors without one, give a phrase from the message, such as `'lifetime may not live long enough'`. | A compile error whose output contains `error[E0382]`, or the phrase. No `expect`. |
+| `panics: true` | The program is meant to panic. | It runs and exits 101. `expect` is optional and, if given, is the stdout printed before the panic. |
+| `exits: 1` | The program is meant to end with that status, as `main` returning `Err` does. | It runs and exits with that status. `expect` is optional. |
+| `release: true` | Compile with optimizations, where integer overflow wraps instead of panicking. | As for any cell. |
+| `warns: true`, `varies: true` | As in C. Use `varies` for `HashMap` iteration order, addresses and thread timing, or make the output deterministic (sort, join before printing). | As in C. |
+
+A cell with `fails`, `panics` or `exits` shows its output under the code before anyone presses Run, because the compiler's message is the lesson. That output is recorded in `lessons/recorded.js` by `node tools/verify.cjs <id> --record` (add `--only <lesson>` while writing; other lessons' entries are kept). The check fails if a cell's output has not been recorded, so run `--record` after adding or editing such a cell. Never edit `recorded.js` by hand.
+
+An overflow example must take its operands from a function parameter (or `std::hint::black_box`). The compiler rejects overflow it can compute in advance, which turns the intended panic into a compile error.
+
+**Questions.** `predict` and `verify: true` work as in C. A single-choice question can also be a "does this compile?" question, by naming the outcome of its `code`:
+
+```js
+{ q: 'Does this program compile?', code: rs`…`,
+  options: [{ t: 'No: `count` is not `mut`', ok: true, why: '…' }, { t: 'Yes, and it prints `6`', why: '…' }],
+  verify: 'E0384' }   // or a phrase from the message, or 'compiles' (it builds and exits 0), or 'panics'
+```
+
+**Challenges.** The learner's code is compiled first in the file, so the compiler's line numbers are the editor's, followed by `prelude` and the tests. Items can come in any order in Rust, so `prelude` may declare types the learner's code uses, and may hold `use` lines.
+
+- A test `body` is the body of a function, written without indentation, using `assert!`, `assert_eq!` and `assert_ne!`. A panic fails that test and the next test still runs. Give an assertion a message when the values alone would not explain it: `assert_eq!(count, 0, "first_word must not allocate")`.
+- `panics(|| expression)` is available in every test. It returns true if the closure panics, without reporting a failure, so a test can check that code refuses bad input.
+- `track: true` installs a counting allocator and makes three functions available in tests: `allocation_count()` (allocations since this test began; growing a `Vec` or `String` counts as one), `live_allocations()` and `peak_live_allocations()`. A test also fails if anything allocated during it is still allocated at its end. To measure one call, read `allocation_count()` before and after it.
+- `forbid: ['clone']` lists identifiers the learner's code may not use. Comments and string literals are ignored. `unsafe` is forbidden everywhere unless the challenge sets `unsafe: true`. Beware of names that are also keywords: `forbid: ['for']` also rejects `impl Trait for Type`.
+- `broken: 'compile'` marks a starter that must not compile: the usual "fix it" challenge for a borrow error. A starter that only ignores its parameters may produce "unused variable" warnings; Rust starters are allowed to warn, and `starterWarns` is not needed. The solution must compile with no warnings at all.
+- A `fn main` in the learner's code is renamed and kept, so they can leave experiments in place.
+- Tests can't check that something fails to compile. To make a signature matter, write a test that only compiles when the signature is right (for a lifetime challenge: use the result after one argument has gone out of scope), and mark the starter `broken: 'compile'`.
+
+**Figures on a Rust page.**
+
+- `memory` and `trace` use 64-bit sizes. A variable of type `String` or `Vec<T>` gets `.ptr`, `.len` and `.cap` cells without `fields`, and `&str`, `&[T]` and `&mut [T]` get `.ptr` and `.len`. Set them with `s: { ptr: '&buf', len: 5, cap: 5 }`. Put the buffer in the heap frame: `{ id: 'buf', type: 'u8', len: 5, frame: 'heap' }`.
+- `moved: ['s']`, in a trace step or a `memory` figure, greys a variable whose value has moved and removes its arrow. Setting the variable again clears it. Use `dead` and `hide` as in C to show freed storage and dangling pointers in "what would happen if this were allowed" traces.
+- An arrow from a reference (a type starting with `&`) is dashed; any other pointer is solid. Say so in the caption the first time: solid arrows own, dashed arrows borrow.
+- **`{ borrows: { title, code, spans, marks?, caption? } }`** draws numbered code with one vertical bar per variable or reference, covering the lines on which it is in use. Each span is `{ name, kind, from, to }` with line numbers; `kind` is `'owner'`, `'shared'`, `'mut'` or `'moved'`. `marks: [{ line, label, ok? }]` highlights a line and lists the label under the figure: red for a conflict, green with `ok: true`. The figure is drawn from what the lesson says, not from the compiler, so put it beside a run cell that proves the claim.
+- The `bits` widget uses Rust's type names on a Rust page. `pointerLab`, `structLayout` and `cdecl` are about C.
+
+**One more callout.** `{ fromC: … }` renders as "If you took the C course". It is for a direct parallel with a lesson of `c-intro`, and the course must make sense without it.
+
+**Commands.**
+
+```bash
+node tools/verify.cjs rust-intro --only ownership            # one lesson, by a part of its id
+node tools/verify.cjs rust-intro --only ownership --record   # and record its failing cells' output
+node tools/verify.cjs rust-intro --record                    # every lesson; drops entries no cell uses
+node tools/verify.cjs rust-intro --live --only ownership     # one cell and one solution, sent to the real Playground
+node tools/rust-local.cjs                                    # the stand-in by itself, for trying a page offline
+```
+
+`--probe` works as for C. `--native` does nothing for Rust: the normal check already uses the native compiler. Results are cached in `node_modules/.cache/rust-playground`, so an unchanged program costs nothing on the next check.
 
 ## What the verifier enforces
 

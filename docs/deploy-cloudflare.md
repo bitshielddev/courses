@@ -55,6 +55,10 @@ npm run deploy -- <id>
 
 Each `wrangler.jsonc` declares the course's hostname as a custom domain, so a course's first deploy creates its DNS record and certificate. That fails if the hostname already has a DNS record. The config is the source of truth for the domain: each deploy replaces routes added in the dashboard.
 
+A first deploy can stop straight after `Uploaded <id>` with `This Worker does not exist on your account. [code: 10007]`. The upload worked; Cloudflare's API had not caught up with the new Worker when Wrangler asked about it, so the domain was never attached. Check with `npx wrangler deployments list --config courses/<id>/wrangler.jsonc`, and when that lists the upload, run `npm run deploy -- <id>` again. It uploads nothing new and attaches the domain. This happened on `rust-intro`'s first deploy with Wrangler 4.164.0.
+
+Do not request a new course's hostname before its first deploy, not even to confirm that it is free. The answer is "no such host", and the resolver this machine uses keeps that answer for up to 30 minutes (the zone's negative-cache time), so `curl` and `tools/verify.cjs` cannot reach the live site straight after deploying. If that has happened, check the `workers.dev` copy with `--url`, and check the hostname itself with `curl --resolve <host>:443:<address>`, taking the address from `dig +short <host> @1.1.1.1`.
+
 ## 3. Verify
 
 ```bash
@@ -63,6 +67,12 @@ curl -sS -o /dev/null -w '%{http_code}\n' "$SITE_URL/"               # 200
 curl -sS -i "$SITE_URL/health"                                         # 200 text/plain, ok
 curl -sS -o /dev/null -w '%{http_code}\n' "$SITE_URL/missing-page"   # 404
 node tools/verify.cjs <id> --url "$SITE_URL"                           # the full suite, live
+```
+
+For a Rust course the full suite still compiles on this machine: the live page is pointed at the local stand-in for the Rust Playground. Add `--live` to send a sample, one cell and one solution from each lesson, from the live page to the real Playground:
+
+```bash
+node tools/verify.cjs <id> --live --url "$SITE_URL"
 ```
 
 Then add a row to the deployment history in `courses/<id>/README.md` with the date, the version ID Wrangler printed and what changed.

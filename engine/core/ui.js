@@ -1,4 +1,4 @@
-// Shared DOM helpers, the C syntax highlighter, and the code editor.
+// Shared DOM helpers, the syntax highlighter (C, Lean, Python and Rust), and the code editor.
 window.CUI = (() => {
   'use strict';
 
@@ -68,35 +68,107 @@ window.CUI = (() => {
     return node;
   }
 
-  const keywords = [
+  // One grammar per language: alternatives tried in order, each naming the token class it produces.
+  // Code is highlighted as C unless the page's <body data-language> or a block's `lang` says otherwise.
+  // An unknown language, such as `lang: 'text'`, is shown without highlighting.
+  function grammar(rules) {
+    return {
+      pattern: new RegExp(rules.map(([, source]) => `(${source})`).join('|'), 'gm'),
+      classes: rules.map(([name]) => name),
+    };
+  }
+
+  const cKeywords = [
     'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do', 'double', 'else', 'enum', 'extern',
     'float', 'for', 'goto', 'if', 'inline', 'int', 'long', 'register', 'restrict', 'return', 'short', 'signed',
     'sizeof', 'static', 'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
     '_Bool', '_Static_assert', '_Generic', '_Alignof', 'bool', 'true', 'false', 'NULL', 'size_t', 'ptrdiff_t',
     'int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t', 'uint16_t', 'uint32_t', 'uint64_t', 'uintptr_t',
   ];
-  const tokenPattern = new RegExp([
-    String.raw`(^[\t ]*#[^\n]*)`,
-    String.raw`(\/\/[^\n]*|\/\*[\s\S]*?\*\/)`,
-    String.raw`("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')`,
-    String.raw`(\b(?:0[xX][0-9a-fA-F]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)[uUlLfF]*\b)`,
-    String.raw`(\b(?:${keywords.join('|')})\b)`,
-    String.raw`(\b[A-Za-z_]\w*(?=[\t ]*\())`,
-  ].join('|'), 'gm');
-  const tokenClasses = ['preprocessor', 'comment', 'string', 'number', 'keyword', 'function'];
+  // Lean: declaration and term keywords, then the tactics the lessons use. Names that are also
+  // ordinary identifiers (left, right, next, first) are left out, so a tree's fields stay plain.
+  const leanKeywords = [
+    'abbrev', 'at', 'attribute', 'axiom', 'break', 'by', 'calc', 'catch', 'class', 'continue', 'decreasing_by',
+    'def', 'deriving', 'do', 'else', 'end', 'example', 'extends', 'finally', 'for', 'from', 'fun', 'generalizing',
+    'have', 'if', 'import', 'in', 'inductive', 'instance', 'invariants', 'let', 'match', 'mut', 'mutual',
+    'namespace', 'noncomputable', 'opaque', 'open', 'partial', 'private', 'protected', 'public', 'return',
+    'section', 'set_option', 'show', 'structure', 'termination_by', 'then', 'theorem', 'throw', 'try', 'universe',
+    'unless', 'unsafe', 'using', 'variable', 'where', 'while', 'with',
+    'all_goals', 'apply', 'assumption', 'bv_decide', 'case', 'cases', 'constructor', 'contradiction', 'decide',
+    'exact', 'exfalso', 'exists', 'fun_induction', 'generalize', 'grind', 'induction', 'intro', 'lia', 'obtain',
+    'omega', 'rcases', 'refine', 'repeat', 'rfl', 'rw', 'simp', 'simp_all', 'specialize', 'subst', 'trace_state',
+    'trivial', 'unfold', 'vcgen',
+  ];
+  const leanDeclares = ['abbrev', 'axiom', 'class', 'def', 'inductive', 'instance', 'namespace', 'structure', 'theorem'];
+  const pythonKeywords = [
+    'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
+    'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass',
+    'raise', 'return', 'try', 'while', 'with', 'yield', 'True', 'False', 'None',
+  ];
+  // Rust: the keywords and the built-in types, as the C list has both.
+  const rustKeywords = [
+    'as', 'async', 'await', 'break', 'const', 'continue', 'crate', 'dyn', 'else', 'enum', 'extern', 'false', 'fn',
+    'for', 'if', 'impl', 'in', 'let', 'loop', 'match', 'mod', 'move', 'mut', 'pub', 'ref', 'return', 'self', 'Self',
+    'static', 'struct', 'super', 'trait', 'true', 'type', 'unsafe', 'use', 'where', 'while',
+    'bool', 'char', 'str', 'f32', 'f64', 'i8', 'i16', 'i32', 'i64', 'i128', 'isize', 'u8', 'u16', 'u32', 'u64', 'u128', 'usize',
+  ];
+
+  const grammars = {
+    c: grammar([
+      ['preprocessor', String.raw`^[\t ]*#[^\n]*`],
+      ['comment', String.raw`\/\/[^\n]*|\/\*[\s\S]*?\*\/`],
+      ['string', String.raw`"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'`],
+      ['number', String.raw`\b(?:0[xX][0-9a-fA-F]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)[uUlLfF]*\b`],
+      ['keyword', String.raw`\b(?:${cKeywords.join('|')})\b`],
+      ['function', String.raw`\b[A-Za-z_]\w*(?=[\t ]*\()`],
+    ]),
+    lean: grammar([
+      ['comment', String.raw`--[^\n]*|\/-[\s\S]*?-\/`],
+      // A quote can end an identifier (h', xs'), so a character literal may not follow one.
+      ['string', String.raw`"(?:\\.|[^"\\])*"|(?<![\w'])'(?:\\.|[^'\\\n])'`],
+      ['preprocessor', String.raw`#[a-z_]+\b|@\[[^\]\n]*\]`],
+      ['number', String.raw`\b(?:\d+#\d+|0[xX][0-9a-fA-F]+|0[bB][01]+|\d+(?:\.\d+)?)\b`],
+      ['hole', String.raw`\bsorry\b`],
+      ['function', String.raw`(?<=\b(?:${leanDeclares.join('|')})[\t ]+)[A-Za-z_][\w.']*`],
+      ['keyword', String.raw`(?<![\w.'])(?:${leanKeywords.join('|')})(?![\w'])`],
+    ]),
+    python: grammar([
+      ['comment', String.raw`#[^\n]*`],
+      ['string', String.raw`"""[\s\S]*?"""|'''[\s\S]*?'''|[fFrRbB]{0,2}"(?:\\.|[^"\\\n])*"|[fFrRbB]{0,2}'(?:\\.|[^'\\\n])*'`],
+      ['number', String.raw`\b(?:0[xX][0-9a-fA-F_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?)\b`],
+      ['function', String.raw`(?<=\b(?:def|class)[\t ]+)[A-Za-z_]\w*`],
+      ['keyword', String.raw`\b(?:${pythonKeywords.join('|')})\b`],
+    ]),
+    rust: grammar([
+      ['comment', String.raw`\/\/[^\n]*|\/\*[\s\S]*?\*\/`],
+      // A character literal closes after one character or escape. A lifetime ('a) never closes.
+      ['string', String.raw`b?r#"[\s\S]*?"#|b?r"[^"]*"|b?"(?:\\[\s\S]|[^"\\])*"|b?'(?:\\(?:u\{[^}\n]*\}|x[0-9a-fA-F]{2}|[^\n])|[^'\\\n])'`],
+      ['lifetime', String.raw`'[A-Za-z_]\w*`],
+      ['preprocessor', String.raw`#!?\[[^\]\n]*\]`],
+      ['number', String.raw`\b(?:0x[0-9a-fA-F_]+|0b[01_]+|0o[0-7_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?)(?:[iu](?:8|16|32|64|128|size)|f32|f64)?\b`],
+      ['keyword', String.raw`\b(?:${rustKeywords.join('|')})\b`],
+      // Macros (println!, vec!) and calls.
+      ['function', String.raw`\b[A-Za-z_]\w*!(?=[\s(\[{])|\b[A-Za-z_]\w*(?=[\t ]*\()`],
+    ]),
+  };
 
   // Calls emit(text, tokenClass) for each run of source text, in order.
-  function tokenize(source, emit) {
+  function tokenize(source, emit, lang) {
+    const chosen = grammars[lang || document.body.dataset.language || 'c'];
+    if (!chosen) {
+      emit(source);
+      return;
+    }
     let cursor = 0;
-    for (const match of source.matchAll(tokenPattern)) {
+    for (const match of source.matchAll(chosen.pattern)) {
       if (match.index > cursor) emit(source.slice(cursor, match.index));
-      emit(match[0], tokenClasses[match.slice(1).findIndex(value => value !== undefined)]);
+      emit(match[0], chosen.classes[match.slice(1).findIndex(value => value !== undefined)]);
       cursor = match.index + match[0].length;
     }
     if (cursor < source.length) emit(source.slice(cursor));
   }
 
-  function codeView(source, { numbered = false, block = false } = {}) {
+  function codeView(source, { numbered = false, block = false, lang } = {}) {
     const pre = element('pre', numbered || block ? 'code-view' : 'inline-code-block');
     if (numbered) pre.classList.add('has-line-numbers');
     const code = element('code');
@@ -126,7 +198,7 @@ window.CUI = (() => {
         }
         if (part) sourceText.append(token ? element('span', `token-${token}`, part) : document.createTextNode(part));
       });
-    });
+    }, lang);
     pre.tabIndex = 0;
     pre.rows = rows;
     return pre;

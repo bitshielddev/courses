@@ -19,7 +19,26 @@ window.CWidgets = (() => {
 
   /* ---------- Memory model shared by diagrams and traces ---------- */
 
+  // A Rust page draws memory as a 64-bit machine has it: the Playground's, and the learner's own.
+  const rust = document.body.dataset.language === 'rust';
+
+  function rustSize(type) {
+    if (/^(?:u8|i8|bool)$/.test(type)) return 1;
+    if (/^(?:u16|i16)$/.test(type)) return 2;
+    if (/^(?:u32|i32|f32|char)$/.test(type)) return 4;
+    if (/^(?:u128|i128)$/.test(type)) return 16;
+    return 8;
+  }
+
+  // The words a Rust value with a heap buffer or a length keeps in its own storage.
+  function rustFields(type) {
+    if (/^(?:String|Vec<.*>)$/.test(type)) return [['ptr', 'pointer'], ['len', 'usize'], ['cap', 'usize']];
+    if (/^&(?:'\w+ )?(?:mut )?(?:str|\[.*\])$/.test(type)) return [['ptr', 'pointer'], ['len', 'usize']];
+    return null;
+  }
+
   function sizeOf(type) {
+    if (rust) return rustSize(type);
     if (/\*\s*$/.test(type) || type.includes('(*')) return 4;
     if (/\bchar\b/.test(type)) return 1;
     if (/\bshort\b/.test(type)) return 2;
@@ -38,13 +57,15 @@ window.CWidgets = (() => {
       if (frame) return frame;
       if (id === 'heap') frame = { id, label: 'Heap', next: 0x3000, kind: 'heap' };
       else if (id === 'static') frame = { id, label: 'Static storage', next: 0x1000, kind: 'static' };
-      else frame = { id, label: `Stack frame: ${id}()`, next: 0x7fe0 - 0x40 * stackFrames++, kind: 'stack' };
+      else frame = { id, label: `Stack frame: ${id}()`, next: 0x7fe0 - (rust ? 0x100 : 0x40) * stackFrames++, kind: 'stack' };
       frame.groups = [];
       frames.push(frame);
       return frame;
     }
 
-    for (const spec of vars) {
+    for (const given of vars) {
+      // On a Rust page a String, a Vec or a slice reference gets its pointer, length and capacity without being asked.
+      const spec = rust && !given.len && !given.fields && rustFields(given.type) ? { ...given, fields: rustFields(given.type) } : given;
       const frame = frameFor(spec.frame || 'main');
       const name = spec.name ?? spec.id;
       const group = { id: spec.id, name, type: spec.type, frame, cells: [], compound: Boolean(spec.len || spec.fields) };
@@ -83,6 +104,8 @@ window.CWidgets = (() => {
     const values = new Map();
     const visible = new Set();
     const dead = new Set();
+    // Rust: variables whose value has been moved out. Their storage is still there; using it is an error.
+    const moved = new Set();
     let changed = new Set();
 
     const cellsOf = id => model.groups.has(id) ? model.groups.get(id).cells : [model.cells.get(id)];
@@ -99,6 +122,7 @@ window.CWidgets = (() => {
       if (!cell) throw new Error(`Unknown memory cell “${id}” in a trace.`);
       values.set(id, value);
       changed.add(id);
+      moved.delete(id);
       cell.group.cells.forEach(item => visible.add(item.id));
     }
 
@@ -118,6 +142,12 @@ window.CWidgets = (() => {
           changed.add(cell.id);
         });
       }
+      for (const id of step.moved || []) {
+        cellsOf(id).forEach(cell => {
+          moved.add(cell.id);
+          changed.add(cell.id);
+        });
+      }
       for (const id of step.hide || []) {
         const frame = model.frames.find(item => `frame:${item.id}` === id);
         const targets = frame ? frame.groups.flatMap(group => group.cells) : cellsOf(id);
@@ -125,10 +155,11 @@ window.CWidgets = (() => {
           visible.delete(cell.id);
           values.delete(cell.id);
           dead.delete(cell.id);
+          moved.delete(cell.id);
         });
       }
     }
-    return { values, visible, dead, changed };
+    return { values, visible, dead, moved, changed };
   }
 
   function describeValue(model, state, value) {
@@ -182,11 +213,19 @@ window.CWidgets = (() => {
             row.append(element('span', 'mem-value', 'not an element'));
           } else {
             const shown = describeValue(model, state, state.values.get(cell.id));
-            const value = element('span', `mem-value is-${shown.kind}`, shown.text);
+            const gone = state.moved.has(cell.id);
+            const value = element('span', `mem-value is-${gone ? 'moved' : shown.kind}`, shown.text);
             if (shown.title) value.title = shown.title;
-            if (shown.kind === 'dangling') value.append(element('span', 'mem-flag', 'dangling'));
+            if (gone) value.append(element('span', 'mem-flag', 'moved'));
+            else if (shown.kind === 'dangling') value.append(element('span', 'mem-flag', 'dangling'));
             row.append(value);
-            if (shown.target) pointers.push({ from: cell.id, to: shown.target, dangling: shown.kind === 'dangling' });
+            // A reference borrows what it points at; anything else that holds an address owns it.
+            const borrowed = /^&/.test(group.type || '') || /^&/.test(cell.type || '');
+            if (shown.target && !gone) pointers.push({ from: cell.id, to: shown.target, dangling: shown.kind === 'dangling', borrowed });
+          }
+          if (state.moved.has(cell.id)) {
+            row.classList.add('is-moved');
+            row.title = 'Moved: the value now belongs to another owner, and this variable cannot be used';
           }
           if (state.dead.has(cell.id)) {
             row.classList.add('is-dead');
@@ -226,7 +265,7 @@ window.CWidgets = (() => {
         const reach = self ? 16 : 14 + Math.min(26, Math.abs(y2 - y1) / 5) + 6 * (index % 3);
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', `M ${x} ${y1} C ${x + reach} ${y1}, ${x2 + reach} ${y2}, ${x2 + 5} ${y2}`);
-        path.setAttribute('class', `mem-arrow${pointer.dangling ? ' is-dangling' : ''}`);
+        path.setAttribute('class', `mem-arrow${pointer.dangling ? ' is-dangling' : pointer.borrowed ? ' is-borrowed' : ''}`);
         const head = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         head.setAttribute('d', `M ${x2 + 1} ${y2} l 7 -4 v 8 Z`);
         head.setAttribute('class', `mem-arrow-head${pointer.dangling ? ' is-dangling' : ''}`);
@@ -251,7 +290,7 @@ window.CWidgets = (() => {
   function memory(spec) {
     const node = figure('figure-memory', spec.title, 'Memory');
     const model = buildModel(spec.vars);
-    const state = stateAt(model, [{ set: spec.set, show: spec.show, dead: spec.dead }], 0);
+    const state = stateAt(model, [{ set: spec.set, show: spec.show, dead: spec.dead, moved: spec.moved }], 0);
     state.changed = new Set();
     const view = renderMemory(model, state);
     node.append(view.node);
@@ -315,6 +354,74 @@ window.CWidgets = (() => {
       event.preventDefault();
     });
     go(0);
+    return node;
+  }
+
+  /* ---------- How long each borrow lasts ---------- */
+
+  // Numbered code with one bar per variable or reference, covering the lines on which it is in
+  // use. Each span is { name, kind, from, to }: kind is 'owner' (the value is alive), 'shared'
+  // (a & borrow), 'mut' (a &mut borrow) or 'moved' (the variable can no longer be used).
+  // marks: [{ line, label, ok? }] point at a line: where two bars conflict, or where they do not.
+  function borrows(spec) {
+    const words = { owner: 'owns the value', shared: 'shared borrow', mut: 'mutable borrow', moved: 'moved, unusable' };
+    const node = figure('figure-borrows', spec.title, spec.kicker || 'Borrows');
+    const body = element('div', 'borrows-body');
+    const code = codeView(spec.code, { numbered: true });
+    code.classList.add('trace-code', 'borrows-code');
+    const lanes = element('div', 'borrows-lanes');
+    lanes.setAttribute('role', 'list');
+    const bars = spec.spans.map(span => {
+      const lane = element('div', 'borrow-lane');
+      lane.setAttribute('role', 'listitem');
+      const kind = words[span.kind] ? span.kind : 'shared';
+      const to = span.to ?? span.from;
+      lane.setAttribute('aria-label', `${span.name}: ${words[kind]}, ${span.from === to ? `line ${span.from}` : `lines ${span.from} to ${to}`}`);
+      const name = element('span', 'borrow-name', span.name);
+      const track = element('div', 'borrow-track');
+      const bar = element('span', `borrow-bar is-${kind}`);
+      bar.title = lane.getAttribute('aria-label');
+      track.append(bar);
+      lane.append(name, track);
+      lanes.append(lane);
+      return { from: span.from, to, bar, track };
+    });
+    body.append(code, lanes);
+    node.append(body);
+    for (const mark of spec.marks || []) code.rows[mark.line - 1]?.classList.add(mark.ok ? 'is-fine' : 'is-conflict');
+
+    const kinds = [...new Set(spec.spans.map(span => (words[span.kind] ? span.kind : 'shared')))];
+    const legend = element('p', 'borrows-legend');
+    for (const kind of kinds) {
+      const entry = element('span', 'borrows-key');
+      entry.append(element('span', `borrow-bar is-${kind}`), document.createTextNode(words[kind]));
+      legend.append(entry);
+    }
+    node.append(legend);
+    if (spec.marks?.length) {
+      const notes = element('ul', 'borrows-notes');
+      for (const mark of spec.marks) {
+        const item = element('li', mark.ok ? 'is-fine' : 'is-conflict');
+        item.append(element('span', 'borrows-line', `Line ${mark.line}`));
+        inline(item, ` ${mark.label}`);
+        notes.append(item);
+      }
+      node.append(notes);
+    }
+    if (spec.caption) node.append(prose('p', 'figure-caption', spec.caption));
+
+    // The bars are placed against the code's own rows, so they stay aligned at any width.
+    watchLayout(node, () => {
+      for (const { from, to, bar, track } of bars) {
+        const first = code.rows[from - 1];
+        const last = code.rows[to - 1];
+        if (!first || !last) continue;
+        const origin = track.getBoundingClientRect().top;
+        const top = first.getBoundingClientRect().top - origin;
+        bar.style.top = `${top + 3}px`;
+        bar.style.height = `${Math.max(6, last.getBoundingClientRect().bottom - first.getBoundingClientRect().top - 6)}px`;
+      }
+    });
     return node;
   }
 
@@ -424,7 +531,8 @@ window.CWidgets = (() => {
   function bits() {
     let value = 250;
     const node = figure('figure-lab', 'One byte, two interpretations', 'Try it');
-    node.append(prose('p', 'figure-caption', 'Click a bit to flip it, or step the value. The same eight bits are read as `uint8_t` and as `int8_t`.'));
+    const [unsignedName, signedName] = rust ? ['u8', 'i8'] : ['uint8_t', 'int8_t'];
+    node.append(prose('p', 'figure-caption', `Click a bit to flip it, or step the value. The same eight bits are read as \`${unsignedName}\` and as \`${signedName}\`.`));
     const row = element('div', 'bit-row');
     const cells = Array.from({ length: 8 }, (_, index) => {
       const bit = 7 - index;
@@ -451,9 +559,11 @@ window.CWidgets = (() => {
       const wrapped = ((next % 256) + 256) % 256;
       const signed = wrapped > 127 ? wrapped - 256 : wrapped;
       let message = 'The bits do not record which reading is intended. The type of the expression decides.';
-      if (action === 'plus' && next === 256) message = '`uint8_t` arithmetic wraps: 255 + 1 gives 0. Unsigned wraparound is defined behavior.';
+      if (rust && action === 'plus' && next === 256) message = 'Eight bits cannot hold 256, so the bits wrap to 0. Rust does not let that pass silently: `255u8 + 1` panics in a debug build, and `wrapping_add` asks for the wrap.';
+      else if (rust && action === 'minus' && next === -1) message = 'The bits wrap from 0 to 255. In Rust `0u8 - 1` panics in a debug build. This is why a `usize` index that counts down past zero needs care.';
+      else if (action === 'plus' && next === 256) message = '`uint8_t` arithmetic wraps: 255 + 1 gives 0. Unsigned wraparound is defined behavior.';
       else if (action === 'minus' && next === -1) message = '`uint8_t` arithmetic wraps: 0 − 1 gives 255. This is how `size_t` loops that count down below zero go wrong.';
-      else if (action === 'plus' && wrapped === 128) message = 'The top bit is now set. Read as `int8_t`, the value jumped from 127 to −128.';
+      else if (action === 'plus' && wrapped === 128) message = `The top bit is now set. Read as \`${signedName}\`, the value jumped from 127 to −128.`;
       value = wrapped;
       cells.forEach((cell, index) => {
         const on = Boolean(value & (1 << (7 - index)));
@@ -468,8 +578,8 @@ window.CWidgets = (() => {
         return wrap;
       };
       readout.replaceChildren(
-        item('uint8_t', String(value)),
-        item('int8_t', String(signed)),
+        item(unsignedName, String(value)),
+        item(signedName, String(signed)),
         item('hex', `0x${value.toString(16).padStart(2, '0')}`),
         item('binary', value.toString(2).padStart(8, '0')),
       );
@@ -814,5 +924,5 @@ window.CWidgets = (() => {
     return node;
   }
 
-  return { memory, trace, strip, pointerLab, bits, structLayout, cdecl, describeDeclaration, buildModel, stateAt, icon };
+  return { memory, trace, strip, borrows, pointerLab, bits, structLayout, cdecl, describeDeclaration, buildModel, stateAt, icon };
 })();

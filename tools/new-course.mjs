@@ -2,11 +2,13 @@
 // The sample lessons are tools/templates/<mode>-lesson.js.
 //
 //   node tools/new-course.mjs <id> --mode compiler|lab --title "Title" --summary "One sentence."
-//                             [--subtitle "Topbar subtitle"] [--tag "C17"]
+//                             [--subtitle "Topbar subtitle"] [--tag "C17"] [--language rust] [--brand "Rust"]
 //
 // <id> becomes the folder courses/<id>/, the Worker name and the hostname <id>.courses.bitshield.dev.
 // --mode compiler   lessons with C that runs in the browser, and graded challenges
 // --mode lab        lessons whose practical work happens on a Linux machine, with a notebook
+// --language rust   a compiler course in Rust: code runs through the Rust Playground (engine/rust/)
+// --brand "Rust"    the series name in the top bar and page title: "Rust / Field Manual" (default "C")
 // Nothing is deployed. Replace the sample lesson, then follow the course's README.md.
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -18,7 +20,7 @@ const id = args[0];
 const mode = option('--mode');
 const title = option('--title');
 const summary = option('--summary');
-const usage = 'Usage: node tools/new-course.mjs <id> --mode compiler|lab --title "Title" --summary "One sentence." [--subtitle "…"] [--tag "…"]';
+const usage = 'Usage: node tools/new-course.mjs <id> --mode compiler|lab --title "Title" --summary "One sentence." [--subtitle "…"] [--tag "…"] [--language rust] [--brand "…"]';
 if (!id || id.startsWith('--') || !courses.modes.includes(mode) || !title || !summary) {
   console.error(usage);
   process.exit(1);
@@ -34,8 +36,15 @@ if (existsSync(dir)) {
 }
 
 const lab = mode === 'lab';
+const language = option('--language');
+const rust = language === 'rust';
+if (language !== undefined && (!rust || lab)) {
+  console.error('--language takes "rust", and only with --mode compiler. Leave it out for a C course.');
+  process.exit(1);
+}
+const brand = option('--brand') || 'C';
 const subtitle = option('--subtitle') || (lab ? 'Linux lab project' : 'Interactive programming course');
-const tag = option('--tag') || (lab ? 'Linux' : 'C17');
+const tag = option('--tag') || (lab ? 'Linux' : rust ? 'Rust 2024' : 'C17');
 const url = `https://${id}.courses.bitshield.dev/`;
 const storageKey = `${id}-v1`;
 const today = new Date().toISOString().slice(0, 10);
@@ -43,7 +52,9 @@ const html = text => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/
 const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%2317211d'/%3E%3Cpath d='m9 13 7 7-7 7m12 0h10' fill='none' stroke='%23bff2cb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E";
 const engineScripts = lab
   ? ['core/ui.js', 'core/widgets.js', 'lab/notebook.js', 'core/app.js']
-  : ['core/ui.js', 'core/widgets.js', 'compiler/driver.js', 'compiler/runtime.js', 'core/app.js'];
+  : ['core/ui.js', 'core/widgets.js', `${rust ? 'rust' : 'compiler'}/driver.js`, `${rust ? 'rust' : 'compiler'}/runtime.js`, 'core/app.js'];
+// A Rust course keeps the compiler output of cells that are meant to fail in lessons/recorded.js.
+const lessonScripts = rust ? ['lessons/recorded.js', 'lessons/01-getting-started.js'] : ['lessons/01-getting-started.js'];
 const progress = lab ? 'Project progress' : 'Course progress';
 
 const page = `<!doctype html>
@@ -53,18 +64,18 @@ const page = `<!doctype html>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="${html(summary)}">
     <meta name="theme-color" content="#17211d">
-    <title>${html(title)} · C / Field Manual</title>
+    <title>${html(title)} · ${html(brand)} / Field Manual</title>
     <link rel="canonical" href="${url}">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="${html(title)} · C / Field Manual">
+    <meta property="og:title" content="${html(title)} · ${html(brand)} / Field Manual">
     <meta property="og:description" content="${html(summary)}">
     <meta property="og:url" content="${url}">
     <link rel="icon" href="${icon}">
     <link rel="stylesheet" href="../../engine/core/styles.css">
-    <script defer src="lessons/01-getting-started.js"></script>
+${lessonScripts.map(file => `    <script defer src="${file}"></script>`).join('\n')}
 ${engineScripts.map(file => `    <script defer src="../../engine/${file}"></script>`).join('\n')}
   </head>
-  <body data-mode="${mode}" data-storage-key="${storageKey}">
+  <body data-mode="${mode}"${rust ? ' data-language="rust"' : ''} data-storage-key="${storageKey}">
     <a class="skip-link" href="#lesson-title">Skip to the lesson</a>
     <header class="topbar">
       <a class="brand" href="#" aria-label="${html(title)}, first lesson">
@@ -72,7 +83,7 @@ ${engineScripts.map(file => `    <script defer src="../../engine/${file}"></scri
           <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 6 6-6 6m9 0h7"/></svg>
         </span>
         <span class="brand-text">
-          <span class="brand-name">C <span class="brand-divider">/</span> Field Manual</span>
+          <span class="brand-name">${html(brand)} <span class="brand-divider">/</span> Field Manual</span>
           <span class="brand-subtitle">${html(subtitle)}</span>
         </span>
       </a>
@@ -150,7 +161,7 @@ const readme = `# ${title}
 
 ${summary}
 
-- Mode: **${mode}**${lab ? ' (lessons in the browser, practical work on Linux with a notebook)' : ' (C compiles and runs in the browser; graded challenges)'}
+- Mode: **${mode}**${lab ? ' (lessons in the browser, practical work on Linux with a notebook)' : rust ? ' (Rust runs through the Rust Playground; graded challenges)' : ' (C compiles and runs in the browser; graded challenges)'}
 - Live: ${url} (not deployed yet)
 - Local: open [index.html](index.html) straight from this folder.
 - Saved progress: \`localStorage["${storageKey}"]\`. Never change this key after the first deploy.
@@ -181,7 +192,8 @@ npm run deploy -- ${id}
 
 mkdirSync(path.join(dir, 'lessons'), { recursive: true });
 writeFileSync(path.join(dir, 'index.html'), page);
-copyFileSync(path.join(courses.root, 'tools', 'templates', `${mode}-lesson.js`), path.join(dir, 'lessons', '01-getting-started.js'));
+copyFileSync(path.join(courses.root, 'tools', 'templates', `${rust ? 'rust' : mode}-lesson.js`), path.join(dir, 'lessons', '01-getting-started.js'));
+if (rust) copyFileSync(path.join(courses.root, 'tools', 'templates', 'rust-recorded.js'), path.join(dir, 'lessons', 'recorded.js'));
 writeFileSync(path.join(dir, 'course.json'), `${JSON.stringify({ title, summary, publish: ['index.html', 'lessons'] }, null, 2)}\n`);
 writeFileSync(path.join(dir, 'wrangler.jsonc'), wrangler);
 writeFileSync(path.join(dir, 'README.md'), readme);

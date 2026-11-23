@@ -605,6 +605,7 @@ svg { flex: none; vertical-align: middle; }
 .callout.is-compare { --callout: #2f6f9a; }
 .callout.is-aside { --callout: #7d4f96; }
 .callout.is-native { --callout: #9a7a1f; }
+.callout.is-fromC { --callout: #4f6f58; }
 
 .callout-label {
   display: flex;
@@ -659,6 +660,8 @@ svg { flex: none; vertical-align: middle; }
 .inline-code-block .token-keyword { color: #226040; }
 .inline-code-block .token-preprocessor { color: #684683; }
 .inline-code-block .token-function { color: #245b75; }
+.inline-code-block .token-lifetime { color: #8a3f63; }
+.inline-code-block .token-hole { color: #9a3d22; font-weight: 650; }
 
 .takeaway {
   margin-top: 34px;
@@ -819,6 +822,8 @@ svg { flex: none; vertical-align: middle; }
 .token-keyword { color: #b5e7c9; }
 .token-preprocessor { color: #c7b9de; }
 .token-function { color: #a8cddf; }
+.token-lifetime { color: #e6b4cd; }
+.token-hole { color: #f2b29c; font-weight: 650; }
 
 .editor-wrap {
   --rows: 3;
@@ -903,6 +908,9 @@ svg { flex: none; vertical-align: middle; }
 .console-output:is(.is-empty, [data-empty='true']) { color: var(--terminal-muted); }
 
 .console-output:is(.is-error, [data-state='error']) { color: #f1c7ad; }
+/* rustc lays its messages out in columns, with markers under the code they refer to. Wrapping
+   breaks that, so a Rust page scrolls sideways instead and gives the message more height. */
+body[data-language='rust'] .console-output { max-height: 440px; overflow-wrap: normal; white-space: pre; }
 
 .runtime-status {
   display: flex;
@@ -1082,6 +1090,35 @@ svg { flex: none; vertical-align: middle; }
 .mem-arrow-head { fill: #2f6f9a; }
 .mem-arrow.is-dangling { stroke: #b0553d; stroke-dasharray: 4 3; }
 .mem-arrow-head.is-dangling { fill: #b0553d; }
+/* Rust: a solid arrow owns what it points at, a dashed one borrows it. */
+.mem-arrow.is-borrowed { stroke-dasharray: 6 3; }
+/* Rust: a variable whose value has moved to another owner. */
+.mem-cell.is-moved { border-style: dashed; background: #f1f2eb; }
+.mem-cell.is-moved .mem-name { color: #78827a; }
+.mem-value.is-moved { background: repeating-linear-gradient(135deg, #e6e8e0 0 5px, #f3f4ee 5px 10px); color: #6f7a71; }
+
+/* The borrows figure: code on the left, one bar per variable or reference on the right. */
+.borrows-body { --borrow-head: 24px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.borrows-code { max-height: none; margin-top: var(--borrow-head); }
+.borrows-code .source-line.is-conflict { background: #4d2b23; box-shadow: inset 3px 0 0 #e08a6d; }
+.borrows-code .source-line.is-conflict .line-number { color: #f0b39d; }
+.borrows-code .source-line.is-fine { background: #2d4a3b; box-shadow: inset 3px 0 0 var(--mint); }
+.borrows-lanes { display: flex; gap: 8px; padding-right: 2px; }
+.borrow-lane { display: flex; min-width: 24px; flex-direction: column; align-items: center; }
+.borrow-name { display: flex; height: var(--borrow-head); align-items: flex-start; color: var(--forest-deep); font: 650 .68rem/1.5 var(--mono); white-space: nowrap; }
+.borrow-track { position: relative; width: 100%; flex: 1; border-radius: 6px; background: #e6ece2; }
+.borrow-bar { position: absolute; left: 50%; width: 10px; margin-left: -5px; border-radius: 5px; background: #2f6f9a; }
+.borrow-bar.is-owner { background: #4f8a69; }
+.borrow-bar.is-shared { background: #2f6f9a; }
+.borrow-bar.is-mut { background: #c0703a; }
+.borrow-bar.is-moved { background: repeating-linear-gradient(135deg, #a9b0a7 0 4px, #d5d9d0 4px 8px); }
+.borrows-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 11px; color: var(--muted); font-size: .78rem; }
+.borrows-key { display: inline-flex; align-items: center; gap: 6px; }
+.borrows-key .borrow-bar { position: static; height: 13px; margin: 0; }
+.borrows-notes { display: grid; gap: 5px; margin: 9px 0 0; padding: 0; list-style: none; font-size: .86rem; line-height: 1.55; }
+.borrows-notes li { padding: 5px 10px; border-left: 3px solid #b0553d; border-radius: 4px; background: #f6e7df; }
+.borrows-notes li.is-fine { border-left-color: #4f8a69; background: #e3efe2; }
+.borrows-line { color: var(--forest-deep); font: 650 .7rem/1.5 var(--mono); }
 
 .trace-body {
   display: grid;
@@ -1731,6 +1768,8 @@ label.quiz-option { cursor: pointer; }
 .test-report { display: grid; gap: 4px; padding: 8px 10px 0; }
 .test-failure { font-family: var(--sans); font-size: .8rem; line-height: 1.5; }
 .test-failure code { overflow-wrap: anywhere; }
+/* A Rust panic message can span lines: an assert_eq! failure prints both sides. */
+.test-failure code.is-message { white-space: pre-wrap; }
 
 .test-result-state {
   display: inline-flex;

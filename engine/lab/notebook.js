@@ -1,11 +1,12 @@
-// The Linux lab notebook, used by courses whose <body> has data-mode="lab".
-// The learner runs the experiments on Linux. Only the notebook lives in this page.
+// The lab notebook, used by courses whose <body> has data-mode="lab".
+// The learner does the practical work on their own machine (Linux, unless the page's
+// data-lab-title says otherwise). Only the notebook lives in this page.
 window.CLocalLab = (() => {
   'use strict';
 
   const { element, inline, prose } = window.CUI;
 
-  function render(stage, lesson, { lessons, challengeState, renderBlock, hintBox, persist, renderProgress, renderFooter }) {
+  function render(stage, lesson, { lessons, labTitle, challengeState, renderBlock, hintBox, persist, renderProgress, renderFooter }) {
     const lab = lesson.challenges[0];
     const state = challengeState(lesson, lab);
     state.checks ??= [];
@@ -58,7 +59,7 @@ window.CLocalLab = (() => {
     notebook.append(notes);
 
     const checks = element('fieldset', 'lab-checks');
-    checks.append(element('legend', 'notebook-label', 'Check off what you verified on Linux'));
+    checks.append(element('legend', 'notebook-label', labTitle === 'Linux lab' ? 'Check off what you verified on Linux' : 'Check off what you verified on your machine'));
     const status = element('p', 'lab-check-status');
     status.setAttribute('role', 'status');
     function updateStatus() {

@@ -10,11 +10,18 @@
 //   --probe <file>         one compiler course: instead of checking, run sources against challenge tests.
 //                          The file is a JSON list of { name, lesson: <lesson id>, challenge: <challenge id>, source }
 //   --url <address>        test a served copy of one course, such as http://localhost:8787 or its live site
+//   --record               Rust courses: write the output of every cell that is meant to fail to lessons/recorded.js,
+//                          which the page shows under the cell. With --only, other lessons' entries are kept
+//   --live                 Rust courses: send one cell and one solution per lesson to the real Rust Playground
+//                          instead of the local stand-in, to see that the two still agree. Use it sparingly
 //
 // First it checks every course's settings (tools/courses.cjs). Then each course gets the
 // checks for its mode, from data-mode on its <body>:
 //   compiler  lint; run every program, predict question and challenge (the solution passes,
-//             the starter does not); render every tab and step through every trace
+//             the starter does not); render every tab and step through every trace.
+//             A C course runs in the bundled compiler. A Rust course (data-language="rust") runs
+//             through its page as a learner's code does, but against tools/rust-local.cjs, a
+//             stand-in for the Rust Playground that uses the rustc on this machine
 //   lab       lint; answer every question, fill in and tick every lab, reload, narrow layout
 // Both modes check that relative links in the lessons resolve. A course can add browser
 // checks of its own in courses/<course>/checks.cjs.
@@ -30,11 +37,13 @@ const courses = require('./courses.cjs');
 
 const args = process.argv.slice(2);
 const valued = ['--only', '--shots', '--shot-targets', '--probe', '--url'];
-const flags = ['--native', ...valued];
+const flags = ['--native', '--record', '--live', ...valued];
 const option = name => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 const only = option('--only');
 const shots = option('--shots');
 const native = args.includes('--native');
+const record = args.includes('--record');
+const live = args.includes('--live');
 const served = option('--url');
 const chromePath = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -62,7 +71,7 @@ function walkBlocks(blocks, visit) {
       continue;
     }
     visit(block);
-    for (const key of ['pitfall', 'compare', 'aside', 'tip', 'native']) {
+    for (const key of ['pitfall', 'compare', 'aside', 'tip', 'native', 'fromC']) {
       if (block[key] !== undefined) walkBlocks(block[key], visit);
     }
     if (block.details) walkBlocks(block.body, visit);
@@ -103,6 +112,7 @@ function lint(lessons, mode) {
       for (const item of block.list || block.steps || []) badText(`${where} list`, item);
       if (block.table) [block.table.head, ...block.table.rows].flat().forEach(cell => badText(`${where} table`, cell));
       if (block.trace) block.trace.steps.forEach(step => badText(`${where} trace "${block.trace.title}"`, step.say));
+      if (block.borrows) (block.borrows.marks || []).forEach(mark => badText(`${where} borrows "${block.borrows.title}"`, mark.label));
       if (mode === 'lab' && block.run !== undefined) fail(where, 'a lab course has no compiler, so it cannot have run cells; use code or shell');
     }
     lesson.quiz.forEach((question, index) => {
@@ -168,6 +178,58 @@ function buildNative(name, source, where) {
   return run;
 }
 
+// The key engine/core/app.js keeps a cell's recorded output under (recordKey there).
+function recordKey(source) {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let index = 0; index < source.length; index++) {
+    const code = source.charCodeAt(index);
+    h1 = Math.imul(h1 ^ code, 2654435761);
+    h2 = Math.imul(h2 ^ code, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+}
+
+// A cell or question can say that its program is meant to fail: `fails` (an error code such as
+// E0382, or a phrase from the message, for a program that must not compile), `panics`, or
+// `exits: <status>`. Returns undefined when it says nothing of the kind, '' when the run did
+// what was said, and otherwise what happened instead.
+function intendedProblem({ fails, panics, exits }, result) {
+  const got = `${result.exitCode === 0 ? 'it ran and exited 0' : `it stopped at the ${result.stage} stage with exit ${result.exitCode}`}: ${result.stderr.slice(0, 500)}`;
+  if (fails) {
+    if (result.stage !== 'compile' || result.exitCode === 0) return `was expected not to compile (${fails}), but ${got}`;
+    const wanted = /^E\d{4}$/.test(fails) ? `error[${fails}]` : fails;
+    return result.stderr.includes(wanted) ? '' : `was expected to fail with ${fails}, but the compiler said: ${result.stderr.slice(0, 600)}`;
+  }
+  if (panics) return result.stage === 'run' && result.exitCode === 101 ? '' : `was expected to panic, but ${got}`;
+  if (exits) return result.stage === 'run' && result.exitCode === exits ? '' : `was expected to exit with status ${exits}, but ${got}`;
+  return undefined;
+}
+
+// lessons/recorded.js: the output of each cell that is meant to fail, for the page to show.
+const recordedFile = course => path.join(course.dir, 'lessons', 'recorded.js');
+function readRecorded(course) {
+  try {
+    const text = fs.readFileSync(recordedFile(course), 'utf8');
+    return JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+  } catch {
+    return {};
+  }
+}
+function writeRecorded(course, entries) {
+  const sorted = Object.fromEntries(Object.keys(entries).sort().map(key => [key, entries[key]]));
+  const file = recordedFile(course);
+  const partial = `${file}.${process.pid}.tmp`;
+  fs.writeFileSync(partial, `// Generated by \`node tools/verify.cjs ${course.id} --record\`. Do not edit by hand.
+// The output of every run cell that is meant to fail (fails, panics, exits), keyed by a hash of
+// the cell's source. The page shows it under the cell before Run is pressed.
+window.C_RECORDED = ${JSON.stringify(sorted, null, 2)};
+`);
+  fs.renameSync(partial, file);
+}
+
 // Reads a file the page links to, from disk or over HTTP.
 async function readLink(url) {
   if (url.startsWith('file:')) return fs.readFileSync(fileURLToPath(url), 'utf8');
@@ -196,10 +258,15 @@ async function checkLinks(lessons, page) {
 
 // Compiler courses: every program, question and challenge against the bundled compiler,
 // then every tab rendered and every trace stepped through.
-async function checkCompilerCourse({ browser, screenshot, all }) {
+async function checkCompilerCourse({ browser, screenshot, all, course, standIn }) {
   const lessons = all.filter(lesson => !only || lesson.id.includes(only));
   console.log(`Loaded ${all.length} lessons; checking ${lessons.length}.`);
-  const run = source => browser(source => window.CCompiler.run(source), source);
+  const rust = course.language === 'rust';
+  const run = (source, options) => browser((source, options) => window.CCompiler.run(source, options), source, options || {});
+  const joinOutput = (stdout, stderr) => [stdout.trimEnd(), stderr.trimEnd()].filter(Boolean).join('\n\n');
+  const recordedNow = rust ? await browser(() => window.C_RECORDED || {}) : {};
+  const recordings = {};
+  let differing = 0;
   const runTests = (lessonId, challengeId, source) => browser(async (lessonId, challengeId, source) => {
     const challenge = window.C_LESSONS.find(lesson => lesson.id === lessonId).challenges.find(item => item.id === challengeId);
     const marker = 'FMVERIFY';
@@ -209,6 +276,26 @@ async function checkCompilerCourse({ browser, screenshot, all }) {
   }, lessonId, challengeId, source);
   const trim = text => text.replace(/\r/g, '').split('\n').map(line => line.trimEnd()).join('\n').replace(/^\n+|\n+$/g, '');
   let programs = 0;
+
+  // A Rust check compiles hundreds of small programs. Handing them all to the stand-in at once
+  // lets it compile several at a time and cache the answers, so the walk below finds them ready.
+  if (standIn && !option('--probe')) {
+    const jobs = [];
+    for (const lesson of lessons) {
+      lesson.sections.forEach(section => walkBlocks(section.body, block => {
+        if (block.run !== undefined) jobs.push({ code: block.run, mode: block.release ? 'release' : 'debug' });
+      }));
+      lesson.quiz.forEach(question => {
+        if (question.kind === 'predict' || question.verify) jobs.push({ code: question.code, mode: 'debug' });
+      });
+    }
+    const built = await browser(ids => ids.flatMap(lessonId => window.C_LESSONS.find(lesson => lesson.id === lessonId).challenges
+      .flatMap(challenge => [challenge.solution, challenge.starter].map(source => window.CTestDriver.build(source, challenge, 'FMVERIFY')))), lessons.map(lesson => lesson.id));
+    built.forEach(code => jobs.push({ code, mode: 'debug' }));
+    const started = Date.now();
+    await Promise.all(jobs.map(job => fetch(`${standIn.url}/execute`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(job) }).then(response => response.arrayBuffer(), () => {})));
+    console.log(`Compiled ${jobs.length} programs ahead of the walk (${((Date.now() - started) / 1000).toFixed(1)}s).`);
+  }
 
   if (option('--probe')) {
     for (const probe of JSON.parse(fs.readFileSync(option('--probe'), 'utf8'))) {
@@ -227,28 +314,49 @@ async function checkCompilerCourse({ browser, screenshot, all }) {
     lesson.sections.forEach((section, index) => walkBlocks(section.body, block => {
       if (block.run !== undefined) cells.push({ ...block, where: `${lesson.id} section ${index + 1} ${block.name || 'cell'}` });
     }));
-    for (const cell of cells) {
-      const result = await run(cell.run);
+    for (const cell of live ? cells.slice(0, 1) : cells) {
+      const result = await run(cell.run, cell.release ? { release: true } : undefined);
       programs++;
-      if (result.exitCode !== 0) fail(cell.where, `exit ${result.exitCode}: ${result.stderr.slice(0, 600)}`);
-      else if (Boolean(result.stderr.trim()) !== Boolean(cell.warns)) fail(cell.where, cell.warns ? 'expected a compiler warning' : `unexpected compiler output: ${result.stderr.slice(0, 600)}`);
+      // undefined unless the cell says it is meant to fail (fails, panics or exits).
+      const meant = intendedProblem(cell, result);
+      if (meant) fail(cell.where, meant);
+      else if (meant === undefined && result.exitCode !== 0) fail(cell.where, `exit ${result.exitCode}: ${result.stderr.slice(0, 600)}`);
+      else if (meant === undefined && Boolean(result.stderr.trim()) !== Boolean(cell.warns)) fail(cell.where, cell.warns ? 'expected a compiler warning' : `unexpected compiler output: ${result.stderr.slice(0, 600)}`);
       if (cell.expect !== undefined && result.stdout !== cell.expect) fail(cell.where, `stdout was ${JSON.stringify(result.stdout)}, expected ${JSON.stringify(cell.expect)}`);
-      if (cell.expect === undefined && !cell.warns && !cell.varies) fail(cell.where, `no expected output recorded; it printed ${JSON.stringify(result.stdout)}`);
-      if (native && !cell.warns && result.exitCode === 0) {
+      if (cell.expect === undefined && !cell.warns && !cell.varies && meant === undefined) fail(cell.where, `no expected output recorded; it printed ${JSON.stringify(result.stdout)}`);
+      if (meant === '' && !live) {
+        // The page shows this output under the cell before Run is pressed, so it has to be on file.
+        const key = recordKey(cell.run);
+        const shown = joinOutput(result.stdout, result.stderr);
+        recordings[key] = shown;
+        if (!record && recordedNow[key] === undefined) fail(cell.where, `its output is not in lessons/recorded.js; run: node tools/verify.cjs ${course.id} --record`);
+        else if (!record && recordedNow[key] !== shown) differing++;
+      }
+      if (native && !rust && !cell.warns && result.exitCode === 0) {
         const local = buildNative('cell', cell.run, cell.where);
         if (local && cell.expect !== undefined && !cell.sizes && local.stdout !== cell.expect) fail(cell.where, `native stdout was ${JSON.stringify(local.stdout)}`);
       }
     }
     for (const [index, question] of lesson.quiz.entries()) {
       const where = `${lesson.id} question ${index + 1}`;
-      if (question.kind !== 'predict' && !question.verify) continue;
+      if ((question.kind !== 'predict' && !question.verify) || live) continue;
       const result = await run(question.code);
       programs++;
+      // A "does this compile?" question names the outcome: an error code or phrase, 'panics' or 'compiles'.
+      if (question.kind !== 'predict' && typeof question.verify === 'string') {
+        if (question.verify === 'compiles') {
+          if (result.exitCode !== 0) fail(where, `the code was expected to compile and run, but it stopped at the ${result.stage} stage with exit ${result.exitCode}: ${result.stderr.slice(0, 600)}`);
+        } else {
+          const problem = intendedProblem(question.verify === 'panics' ? { panics: true } : { fails: question.verify }, result);
+          if (problem) fail(where, `the code ${problem}`);
+        }
+        continue;
+      }
       const wanted = question.kind === 'predict' ? question.answer : question.options.find(option => option.ok).t.replace(/`/g, '');
       if (result.exitCode !== 0 || (result.stderr.trim() && !question.warns)) fail(where, `exit ${result.exitCode}: ${result.stderr.slice(0, 600)}`);
       else if (trim(result.stdout) !== trim(wanted)) fail(where, `prints ${JSON.stringify(result.stdout)}, but the answer is ${JSON.stringify(wanted)}`);
     }
-    for (const challenge of lesson.challenges) {
+    for (const challenge of live ? lesson.challenges.slice(0, 1) : lesson.challenges) {
       const where = `${lesson.id} challenge ${challenge.id}`;
       const solved = await runTests(lesson.id, challenge.id, challenge.solution);
       programs++;
@@ -257,7 +365,8 @@ async function checkCompilerCourse({ browser, screenshot, all }) {
       else if (!solved.report.tests.every(test => test.passed)) {
         fail(where, `solution fails: ${solved.report.tests.map((test, i) => test.passed ? '' : `#${i + 1} ${test.failures.concat(test.notes).join('; ')}`).filter(Boolean).join(' | ')}`);
       } else if (output) fail(where, `solution produces output or warnings: ${output.slice(0, 600)}`);
-      if (native && solved.exitCode === 0) {
+      if (live) continue;
+      if (native && !rust && solved.exitCode === 0) {
         const local = buildNative('tests', solved.program, where);
         if (local && (local.stdout.match(/FMVERIFY R \d+ 1/g) || []).length !== challenge.tests.length) fail(where, `native solution run did not pass every test:\n${local.stdout.slice(0, 600)}`);
       }
@@ -274,11 +383,21 @@ async function checkCompilerCourse({ browser, screenshot, all }) {
         fail(where, `starter: exit ${started.exitCode} at ${started.stage}: ${started.stderr.slice(0, 600)}`);
       } else if (passed === challenge.tests.length) {
         fail(where, 'starter passes every test');
-      } else if (started.stderr.trim() && !challenge.starterWarns) {
+      } else if (started.stderr.trim() && !challenge.starterWarns && !rust) {
+        // A Rust starter may warn: a stub that ignores its parameters gets "unused variable", as it would on the learner's machine.
         fail(where, `starter compiles with warnings: ${started.stderr.slice(0, 600)}`);
       }
     }
     console.log(`${problems.length === before ? 'ok  ' : 'FAIL'} ${lesson.id}: ${cells.length} programs, ${lesson.quiz.length} questions, ${lesson.challenges.length} challenges (${((Date.now() - started) / 1000).toFixed(1)}s)`);
+  }
+
+  if (record) {
+    // With --only, other lessons keep their entries. A whole-course run drops entries no cell uses now.
+    const entries = only ? { ...readRecorded(course), ...recordings } : recordings;
+    writeRecorded(course, entries);
+    console.log(`Recorded the output of ${Object.keys(recordings).length} cells in ${path.relative(courses.root, recordedFile(course))}.`);
+  } else if (differing) {
+    console.log(`note ${differing} recorded output${differing === 1 ? ' differs' : 's differ'} from what this compiler prints (a newer rustc rewords messages). --record refreshes them.`);
   }
 
   // Render every lesson and tab, and step through each trace, to catch broken figures.
@@ -337,7 +456,7 @@ async function checkLabCourse({ browser, cdp, screenshot }) {
   const click = selector => browser(selector => document.querySelector(selector).click(), selector);
   await browser(() => localStorage.clear());
   await cdp('Page.reload');
-  await until(() => browser(() => document.querySelector('#tab-challenge')?.textContent.includes('Linux lab')), 'lab course home');
+  await until(() => browser(() => document.querySelector('#tab-challenge')?.textContent.includes(document.body.dataset.labTitle || 'Linux lab')), 'lab course home');
   expect(!await browser(() => Boolean(window.CCompiler || window.CTestDriver)), 'loaded the browser compiler or its test driver');
   const lessons = await browser(() => window.C_LESSONS.map(lesson => ({
     title: lesson.title, questions: lesson.quiz.length, notes: lesson.challenges[0].notes?.length || 0,
@@ -407,7 +526,7 @@ async function checkLabCourse({ browser, cdp, screenshot }) {
     expect(checked, lesson.title + ' did not record the completed lab');
     if (!index) {
       await cdp('Page.reload');
-      await until(() => browser(() => Boolean(document.querySelector('.lab-checks input'))), 'saved Linux lab');
+      await until(() => browser(() => Boolean(document.querySelector('.lab-checks input'))), 'saved lab');
       expect(await browser(note => (!note || document.querySelector('.lab-notes textarea').value === note) &&
         [...document.querySelectorAll('.lab-checks input')].every(input => input.checked) &&
         document.querySelector('.chapter-item.is-active').classList.contains('is-complete'), note), 'lab observations, questions or completed checks were lost on reload');
@@ -425,7 +544,11 @@ async function checkLabCourse({ browser, cdp, screenshot }) {
 
 async function openChrome(page) {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'c-manual-chrome-'));
+  // A Rust course on its live https site sends code to the stand-in on 127.0.0.1. Chrome asks
+  // permission before a public page may reach this machine, and nobody can answer in headless
+  // mode, so that check is off in this throwaway profile.
   const chrome = spawn(chromePath, ['--headless=new', '--disable-gpu', '--no-first-run', '--remote-debugging-port=0',
+    '--disable-features=LocalNetworkAccessChecks',
     `--user-data-dir=${profile}`, '--window-size=1440,960', page], { stdio: 'ignore' });
   let socket;
   const close = async () => {
@@ -489,6 +612,7 @@ async function verifyCourse(course) {
   console.log(`\n== ${course.id} · ${course.title} · ${course.mode} course${served ? ` at ${page}` : ''}`);
   const shotDir = shots && path.join(shots, course.id);
   const { cdp, browser, exceptions, requests, close } = await openChrome(page);
+  let standIn;
   try {
     const screenshot = async name => {
       if (!shotDir) return;
@@ -496,13 +620,21 @@ async function verifyCourse(course) {
       const image = await cdp('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
       fs.writeFileSync(path.join(shotDir, `${name}.png`), Buffer.from(image.result.data, 'base64'));
     };
-    await cdp('Page.reload');
     const compiler = course.mode === 'compiler';
+    if (compiler && course.language === 'rust' && !live) {
+      // The page's Rust runtime sends code to whatever this names, in place of the public Playground.
+      standIn = await require('./rust-local.cjs').start();
+      await cdp('Page.addScriptToEvaluateOnNewDocument', { source: `window.C_PLAYGROUND_URL = ${JSON.stringify(standIn.url)};` });
+      console.log(`Rust runs on this machine: ${standIn.version}.`);
+    }
+    await cdp('Page.reload');
     await until(() => browser(compiler => Boolean(window.C_LESSONS && (!compiler || (window.CCompiler && window.CTestDriver)) && document.querySelector('.chapter-item')), compiler), 'the course to load');
     const all = await browser(() => window.C_LESSONS);
-    lint(all, course.mode);
+    // With --only, a compiler course is linted for the chosen lessons alone, so one part can be
+    // written and checked while another is unfinished. Duplicate ids are found by a whole-course run.
+    lint(only && course.mode === 'compiler' ? all.filter(lesson => lesson.id.includes(only)) : all, course.mode);
     const links = await checkLinks(all, page);
-    const context = { course, page, served, browser, cdp, until, delay, fail, screenshot, all, links, readLink };
+    const context = { course, page, served, browser, cdp, until, delay, fail, screenshot, all, links, readLink, standIn };
 
     let programs = 0;
     if (compiler) {
@@ -530,12 +662,14 @@ async function verifyCourse(course) {
       }
     }
     if (exceptions.length) fail('page', `uncaught exceptions:\n${[...new Set(exceptions)].join('\n')}`);
-    const origin = new URL(page).origin;
-    const external = requests.filter(url => /^https?:/.test(url) && new URL(url).origin !== origin);
+    // A Rust course sends code to its Playground: the local stand-in, or with --live the real one.
+    const allowed = [new URL(page).origin, standIn && new URL(standIn.url).origin, live && course.language === 'rust' && 'https://play.rust-lang.org'];
+    const external = requests.filter(url => /^https?:/.test(url) && !allowed.includes(new URL(url).origin));
     if (external.length) fail('page', `external requests: ${[...new Set(external)].join(', ')}`);
     if (compiler) console.log(`${programs} programs compiled and run.`);
     return programs;
   } finally {
+    await standIn?.close();
     await close();
   }
 }

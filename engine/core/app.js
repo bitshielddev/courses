@@ -4,26 +4,38 @@
   const { element, inline, prose, icon, button, codeView, createEditor, copyText } = window.CUI;
   const widgets = window.CWidgets;
   const driver = window.CTestDriver;
+  // A test driver can name its language's files and wording (engine/rust/driver.js does). The defaults are C's.
+  const info = driver?.info || {};
+  // Output recorded for run cells that are meant to fail, keyed by recordKey(source). tools/verify.cjs --record writes it.
+  const recorded = window.C_RECORDED || {};
   const lessons = window.C_LESSONS || [];
   // Each course page sets these on <body>. See the course skill or README for the meanings.
-  // data-mode: "compiler" (graded C challenges in the browser) or "lab" (a notebook for work done on Linux).
+  // data-mode: "compiler" (graded C challenges in the browser) or "lab" (a notebook for work done on the learner's machine).
   // data-storage-key: where this course keeps progress. Never change it once the course is published.
   // data-legacy-storage-key: optional older key whose progress is migrated on first load.
+  // Optional wording, for courses that are not about C on Linux:
+  // data-language: the language `code` blocks are highlighted as (ui.js reads it; the default is "c").
+  // data-lab-title: the name of a lab course's third tab (the default is "Linux lab").
+  // data-compare-label: the heading of `compare` callouts.
+  // data-finished-label: the note shown when every lesson is complete.
   const { mode = 'compiler', storageKey, legacyStorageKey: legacyKey } = document.body.dataset;
   const labMode = mode === 'lab';
+  const labTitle = document.body.dataset.labTitle || 'Linux lab';
+  const finishedLabel = document.body.dataset.finishedLabel || (labMode ? 'Project complete' : 'Course complete');
   const siteName = document.querySelector('.brand-name')?.textContent.trim() || document.title;
   const tabs = [
     { id: 'learn', title: 'Learn', icon: 'book' },
     { id: 'quiz', title: 'Questions', icon: 'check-circle' },
-    { id: 'challenge', title: labMode ? 'Linux lab' : 'Challenges', icon: labMode ? 'terminal' : 'code' },
+    { id: 'challenge', title: labMode ? labTitle : 'Challenges', icon: labMode ? 'terminal' : 'code' },
   ];
   const levels = { 'warm-up': 'Warm-up', core: 'Core', stretch: 'Stretch' };
   const callouts = {
     pitfall: ['Pitfall', 'alert'],
-    compare: ['Coming from Python, PHP or TypeScript', 'swap'],
+    compare: [document.body.dataset.compareLabel || 'Coming from Python, PHP or TypeScript', 'swap'],
     aside: ['Under the hood', 'layers'],
     tip: ['Tip', 'bulb'],
     native: ['On your machine', 'laptop'],
+    fromC: ['If you took the C course', 'code'],
   };
 
   const byId = id => document.getElementById(id);
@@ -307,7 +319,7 @@
     if (currentTab === 'challenge') {
       if (labMode) {
         stage.className = 'lesson-layout is-linux-lab';
-        window.CLocalLab.render(stage, lesson, { lessons, challengeState, renderBlock, hintBox, persist, renderProgress, renderFooter });
+        window.CLocalLab.render(stage, lesson, { lessons, labTitle, challengeState, renderBlock, hintBox, persist, renderProgress, renderFooter });
       } else {
         renderChallenge(stage, lesson);
       }
@@ -327,7 +339,7 @@
       next.append(button(`Answer ${lesson.quiz.length} questions`, 'primary', () => selectTab('quiz', true), 'arrow', 'end'));
     } else if (currentTab === 'quiz') {
       main.append(button('Back to the lesson', 'secondary', () => selectTab('learn', true), 'back'));
-      next.append(button(labMode ? 'Open the Linux lab' : 'Open the challenges', 'primary', () => selectTab('challenge', true), 'arrow', 'end'));
+      next.append(button(labMode ? `Open the ${labTitle}` : 'Open the challenges', 'primary', () => selectTab('challenge', true), 'arrow', 'end'));
     } else {
       main.append(button('Back to the questions', 'secondary', () => selectTab('quiz', true), 'back'));
       if (item.complete) note.append(icon('check'), element('span', '', 'Lesson complete'));
@@ -340,7 +352,7 @@
         next.append(button('Next lesson', item.complete || unfinished === -1 ? 'primary' : 'secondary', () => navigate(currentIndex + 1), 'arrow', 'end'));
       } else {
         const incomplete = lessons.findIndex(other => !stats(other).complete);
-        if (incomplete === -1) note.replaceChildren(icon('check'), element('span', '', labMode ? 'Project complete' : 'Course complete'));
+        if (incomplete === -1) note.replaceChildren(icon('check'), element('span', '', finishedLabel));
         else if (incomplete !== currentIndex) next.append(button('Resume unfinished lessons', 'primary', () => navigate(incomplete), 'arrow', 'end'));
       }
     }
@@ -353,13 +365,13 @@
 
   const notify = () => listeners.forEach(listener => listener());
 
-  async function start(key, program, finish) {
+  async function start(key, program, finish, options) {
     if (active) return;
     active = key;
     notify();
     let result;
     try {
-      result = await window.CCompiler.run(program);
+      result = await window.CCompiler.run(program, options);
     } catch (error) {
       result = { unavailable: true, stdout: '', stderr: error.message || String(error), exitCode: 1, stage: 'load' };
     }
@@ -372,11 +384,11 @@
 
   function summarize(result, stdout = result.stdout) {
     const outputText = joinOutput(stdout, result.stderr);
-    if (result.unavailable) return { state: 'error', message: 'Compiler unavailable', outputText };
+    if (result.unavailable) return { state: 'error', message: info.unavailable || 'Compiler unavailable', outputText };
     if (result.exitCode !== 0) {
       const message = result.stage === 'compile' ? 'Compilation failed'
         : result.exitCode === 124 ? 'Stopped: time limit reached'
-          : `Program exited with status ${result.exitCode}`;
+          : info.exits?.[result.exitCode] || `Program exited with status ${result.exitCode}`;
       return { state: 'error', message, outputText };
     }
     const warned = Boolean(result.stderr.trim());
@@ -429,8 +441,36 @@
     };
   }
 
+  // The key under which a cell's recorded output is stored. tools/verify.cjs computes the same one.
+  function recordKey(source) {
+    let h1 = 0xdeadbeef;
+    let h2 = 0x41c6ce57;
+    for (let index = 0; index < source.length; index++) {
+      const code = source.charCodeAt(index);
+      h1 = Math.imul(h1 ^ code, 2654435761);
+      h2 = Math.imul(h2 ^ code, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+  }
+
+  // A cell can say that it is meant to fail: `fails` (it does not compile), `panics`, or
+  // `exits: <status>`. This returns the status line for a run that did what the cell says.
+  function intended(cell, result) {
+    if (result.unavailable) return '';
+    if (cell.fails) return result.stage === 'compile' && result.exitCode !== 0 ? 'This does not compile, which is what the example shows.' : '';
+    if (cell.panics) return result.stage === 'run' && result.exitCode === 101 ? 'The program panicked, which is what the example shows.' : '';
+    if (cell.exits) return result.stage === 'run' && result.exitCode === cell.exits ? `The program exited with status ${cell.exits}, which is what the example shows.` : '';
+    return '';
+  }
+
   // An editable program with its own Run button and output.
-  function runCell(key, source, filename = 'main.c') {
+  function runCell(key, source, filename = info.cellName || 'main.c', cell = {}) {
+    // A cell that is meant to fail shows the output recorded when the course was checked,
+    // so the compiler's message can be read before anything is run.
+    const record = cell.fails || cell.panics || cell.exits ? recorded[recordKey(source)] : undefined;
+    let recordShown = Boolean(record);
     const editor = createEditor({
       value: cellDrafts.get(key) ?? source,
       label: `Edit ${filename}`,
@@ -447,27 +487,34 @@
       editor.value = source;
       cellDrafts.delete(key);
       runs.delete(key);
+      recordShown = Boolean(record);
       update();
     }, 'reset');
     const run = button('Run', 'primary', () => {
       const program = editor.value;
-      start(key, program, result => runs.set(key, { source: program, ...summarize(result) }));
+      start(key, program, result => {
+        const expected = program === source ? intended(cell, result) : '';
+        runs.set(key, { source: program, ...summarize(result), ...(expected ? { state: 'warning', message: expected } : {}) });
+      }, cell.release ? { release: true } : undefined);
     }, 'play');
     const card = codeCard(filename, [reset, run]);
     card.classList.add('run-cell');
     const output = consoleView('Output', () => {
-      runs.get(key).outputText = '';
+      if (runs.has(key)) runs.get(key).outputText = '';
+      else recordShown = false;
       update();
     });
     card.append(editor.node, output.node);
 
     function update() {
       const running = active === key;
-      const result = runs.get(key);
+      const result = runs.get(key) || (recordShown && editor.value === source
+        ? { source, state: 'warning', message: 'Recorded output. Press Run to compile it yourself.', outputText: record }
+        : undefined);
       const stale = result && result.source !== editor.value;
       run.disabled = Boolean(active);
       run.querySelector('.button-label').textContent = running ? 'Running…' : 'Run';
-      reset.hidden = editor.value === source && !result;
+      reset.hidden = editor.value === source && !runs.has(key);
       output.node.hidden = !running && !result;
       output.update({
         message: running ? 'Compiling and running…' : stale ? `${result.message} (before your latest edit)` : result?.message || '',
@@ -506,19 +553,19 @@
       const copy = button('Copy', 'quiet', () => copyText(source, copy), 'copy');
       const card = codeCard(item.name || 'Terminal', [copy], shell ? 'terminal' : 'code');
       card.classList.add('lab-code');
-      const code = shell ? element('pre', 'shell-command', source) : codeView(source, { block: true });
+      const code = shell ? element('pre', 'shell-command', source) : codeView(source, { block: true, lang: item.lang });
       code.tabIndex = 0;
       card.append(code);
       return card;
     }
     if (item.code !== undefined) {
-      if (!item.name) return codeView(item.code);
+      if (!item.name) return codeView(item.code, { lang: item.lang });
       const file = element('div', 'named-code');
-      file.append(element('p', 'named-code-label', item.name), codeView(item.code));
+      file.append(element('p', 'named-code-label', item.name), codeView(item.code, { lang: item.lang }));
       return file;
     }
     if (item.text !== undefined) return element('pre', 'inline-code-block is-plain', item.text);
-    if (item.run !== undefined) return runCell(key, item.run, item.name);
+    if (item.run !== undefined) return runCell(key, item.run, item.name, item);
     if (item.list || item.steps) {
       const list = element(item.steps ? 'ol' : 'ul', 'section-list');
       (item.list || item.steps).forEach(entry => list.append(prose('li', '', entry)));
@@ -545,6 +592,7 @@
     if (item.trace) return widgets.trace(item.trace);
     if (item.memory) return widgets.memory(item.memory);
     if (item.strip) return widgets.strip(item.strip);
+    if (item.borrows) return widgets.borrows(item.borrows);
     if (item.widget) return widgets[item.widget](item);
     const kind = Object.keys(callouts).find(name => item[name] !== undefined);
     if (kind) {
@@ -652,7 +700,7 @@
     const title = prose('h2', 'quiz-question', question.q);
     title.id = `question-${lesson.id}-${index}`;
     card.append(head, title);
-    if (question.code && question.kind !== 'predict') card.append(codeView(question.code));
+    if (question.code && question.kind !== 'predict') card.append(codeView(question.code, { lang: question.lang }));
     const feedback = element('div', 'quiz-feedback');
     feedback.setAttribute('role', 'status');
     return { card, badge, feedback, titleId: title.id };
@@ -762,7 +810,7 @@
     const state = quizState(lesson, index);
     const key = `${lesson.id}:quiz.${index}`;
     const { card, badge, feedback, titleId } = questionShell(lesson, question, index);
-    const program = codeCard('predict.c');
+    const program = codeCard(info.predictName || 'predict.c');
     program.append(codeView(question.code, { numbered: true }));
     const form = element('form', 'quiz-form');
     const lines = question.answer.split('\n').length;
@@ -922,7 +970,7 @@
       fix.append(icon('bug'), element('span', '', 'Fix the bug'));
       tags.append(fix);
     }
-    if (challenge.track) tags.append(element('span', 'level-tag is-heap', 'Heap-checked'));
+    if (challenge.track) tags.append(element('span', 'level-tag is-heap', info.trackedLabel || 'Heap-checked'));
     task.append(tags, element('h2', 'section-title', challenge.title));
     [].concat(challenge.prompt).forEach((part, index) => task.append(renderBlock(part, `${key}.prompt.${index}`)));
     if (challenge.signature) task.append(codeView(challenge.signature));
@@ -933,7 +981,7 @@
       panel.append(provided);
     }
     if (challenge.track) {
-      panel.append(prose('p', 'challenge-note', 'These tests run with a checking allocator. A leak, a double free, or a write past the end of a block fails the test that caused it.'));
+      panel.append(prose('p', 'challenge-note', info.trackedNote || 'These tests run with a checking allocator. A leak, a double free, or a write past the end of a block fails the test that caused it.'));
     }
 
     if (challenge.hints?.length) panel.append(hintBox(challenge.hints, state));
@@ -944,11 +992,12 @@
     panel.append(solution);
 
     const workspace = element('aside', 'workspace challenge-workspace');
-    const help = element('p', 'workspace-note', 'Ctrl + Enter or ⌘ + Enter runs the tests. Tab indents; press Esc and then Tab to leave the editor. Anything you printf appears in the console.');
+    const help = element('p', 'workspace-note', info.help || 'Ctrl + Enter or ⌘ + Enter runs the tests. Tab indents; press Esc and then Tab to leave the editor. Anything you printf appears in the console.');
     help.id = 'editor-help';
+    const solutionName = info.solutionName || 'solution.c';
     const editor = createEditor({
       value: typeof state.draft === 'string' ? state.draft : challenge.starter,
-      label: 'Edit solution.c',
+      label: `Edit ${solutionName}`,
       describedBy: 'editor-help',
       minRows: 12,
       maxRows: 30,
@@ -970,7 +1019,7 @@
       editor.focus();
     }, 'reset');
     const run = button('Run tests', 'primary', () => runTests(lesson, challenge, key, editor.value), 'play');
-    const card = codeCard('solution.c', [reset, run]);
+    const card = codeCard(solutionName, [reset, run]);
     card.append(editor.node);
     const output = consoleView('Console', () => {
       runs.get(key).outputText = '';
@@ -1037,7 +1086,7 @@
         if (passed === false) {
           for (const failure of test.failures) {
             const line = element('p', 'test-failure');
-            line.append(element('span', '', 'This check was false: '), element('code', '', failure));
+            line.append(element('span', '', info.failureLabel || 'This check was false: '), element('code', info.failureLabel ? 'is-message' : '', failure));
             report.append(line);
           }
           for (const note of test.notes) report.append(element('p', 'test-failure', `${note}.`));

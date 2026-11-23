@@ -67,6 +67,8 @@ function load(id) {
   if (!course.html) problem('index.html is missing');
   const body = attributes(course.html.match(/<body\b[^>]*>/)?.[0] ?? '');
   course.mode = body['data-mode'];
+  // The language code is highlighted as, and for a compiler course the one it runs: "c" unless the page says otherwise.
+  course.language = body['data-language'] || 'c';
   course.storageKey = body['data-storage-key'];
   course.legacyStorageKey = body['data-legacy-storage-key'];
   if (!modes.includes(course.mode)) problem(`<body data-mode> must be one of ${modes.join(', ')}, not ${JSON.stringify(course.mode)}`);
@@ -106,7 +108,11 @@ function load(id) {
     }
   }
   if (!course.engine.includes('core')) problem('index.html does not load the engine (../../engine/core/)');
-  if (course.mode === 'compiler' && !course.engine.includes('compiler')) problem('a compiler course must load ../../engine/compiler/driver.js and runtime.js');
+  // A compiler course runs code with one engine module: engine/rust/ for Rust, engine/compiler/ (C) otherwise.
+  const runtime = course.language === 'rust' ? 'rust' : 'compiler';
+  if (course.mode === 'compiler' && !course.engine.includes(runtime)) problem(`a ${runtime === 'rust' ? 'Rust' : 'C'} compiler course must load ../../engine/${runtime}/driver.js and runtime.js`);
+  if (course.mode === 'compiler' && runtime === 'rust' && course.engine.includes('compiler')) problem('a Rust course should not load the 23 MB C compiler');
+  if (course.mode === 'lab' && course.engine.includes('rust')) problem('a lab course should not load the Rust runtime');
   if (course.mode === 'lab' && !course.engine.includes('lab')) problem('a lab course must load ../../engine/lab/notebook.js');
   if (course.mode === 'lab' && course.engine.includes('compiler')) problem('a lab course should not load the 23 MB browser compiler');
 

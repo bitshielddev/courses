@@ -1,6 +1,6 @@
 ---
 name: create-course
-description: Plan, scaffold, write, verify and deploy a new interactive course in this C / Field Manual repository, where each course is a folder in courses/<id>/ sharing the lesson engine in engine/. Use it whenever the user wants a new course, tutorial, systems project or lab here ("make a course on sockets", "another project like the inotify one", "start a C course about threads"). Also use it to add a part or several lessons to an existing course, or to change how courses are laid out, checked, built or deployed. It covers choosing between the two modes (compiler: C runs in the browser with graded challenges; lab: practical work on Linux with a notebook), the lesson data format, the verifier and Cloudflare deployment.
+description: Plan, scaffold, write, verify and deploy a new interactive course in this C / Field Manual repository, where each course is a folder in courses/<id>/ sharing the lesson engine in engine/. Use it whenever the user wants a new course, tutorial, systems project or lab here ("make a course on sockets", "another project like the inotify one", "start a C course about threads"). Also use it to add a part or several lessons to an existing course, or to change how courses are laid out, checked, built or deployed. It covers choosing between the two modes (compiler: C runs in the browser, or Rust through the Rust Playground, with graded challenges; lab: practical work on Linux with a notebook), the lesson data format, the verifier and Cloudflare deployment.
 ---
 
 # Create a course
@@ -8,7 +8,7 @@ description: Plan, scaffold, write, verify and deploy a new interactive course i
 This repository holds several interactive courses that share one lesson engine. Read `README.md` at the root first. It has the course list, the layout and the commands. In short:
 
 - `courses/<id>/` is one course: `index.html`, `lessons/NN-*.js`, `course.json`, `wrangler.jsonc`, an optional `checks.cjs` and a `README.md`.
-- `engine/core`, `engine/compiler` and `engine/lab` are shared. A course publishes only the modules its page loads.
+- `engine/core`, `engine/compiler`, `engine/rust` and `engine/lab` are shared. A course publishes only the modules its page loads.
 - `tools/new-course.mjs` scaffolds a course. `tools/verify.cjs` checks courses in headless Chrome. `tools/build.mjs` builds `dist/<id>/`. `tools/cloudflare.mjs` previews and deploys.
 
 The expensive part is the lesson content, not the setup. So most of this skill is about agreeing what to write before writing it, and checking it as you go.
@@ -28,18 +28,22 @@ Settle these with the user. Propose sensible answers rather than asking open que
 
 The browser compiler is Clang 8 targeting 32-bit WebAssembly. It has no stdin, filesystem, network, threads or system calls, and a 2.5 s run limit. If a topic needs any of those, it is a lab course.
 
+A compiler course can teach Rust instead of C (`--language rust`), as `rust-intro` does. Rust is not compiled in the browser: Run and the challenge tests send the code to the Rust Playground, so the learner needs a network connection and the page must say that code leaves the browser. Programs run on a 64-bit machine, threads work, and a run is stopped after about 10 s. The checks never call the Playground; they use the `rustc` on this machine, so it must be installed.
+
 **Id.** Use lower-case words joined by hyphens. By convention, C courses start with `c-` (`c-intro`, `c-inotify`); the scaffold doesn't enforce it. The id becomes the folder, the Cloudflare Worker and `https://<id>.courses.bitshield.dev`. It is hard to change after the first deploy. For a throwaway or test course, use a `zz-` id, skip steps 6 and 7, and afterwards delete both `courses/<id>/` and `dist/<id>/`.
 
-**Scope and depth.** Agree the number of parts and lessons, and roughly how many questions and challenges or labs each lesson has. Default to depth. An early 8-lesson draft of `c-intro`, with one question and one challenge per lesson, was judged "very basic and quite short". It was replaced by 20 lessons with 134 questions and 93 challenges, about 7 questions and 4–6 challenges per lesson. `c-inotify` has 5 lessons with 2 questions and one lab each, because each lab is long. Confirm the size, because it sets the cost.
+**Scope and depth.** Agree the number of parts and lessons, and roughly how many questions and challenges or labs each lesson has. Default to depth. An early 8-lesson draft of `c-intro`, with one question and one challenge per lesson, was judged "very basic and quite short". It was replaced by 20 lessons with 134 questions and 93 challenges, about 7 questions and 4–6 challenges per lesson. `rust-intro` has 24 lessons with 169 questions and 130 challenges. `c-inotify` has 5 lessons with 2 questions and one lab each, because each lab is long. Confirm the size, because it sets the cost.
 
 **Presentation.** Pages carry the series brand "C / Field Manual" in the top bar. Ask before changing it. Also settle the top-bar subtitle and version tag (for example `C17` or `NixOS`), and whether the course links to or from another course.
+
+A lab course need not be about C or Linux. `lean-intro` teaches Lean, compares with Python only, and carries the brand "Lean / Field Manual". Its page sets four attributes on `<body>` that `references/lesson-format.md` lists under "Page settings": the language `code` blocks are highlighted as, the name of the lab tab, the heading of `compare` callouts, and the note shown when the course is finished.
 
 Then write an **outline**: parts, then lessons, and for each lesson its goal, key ideas and planned questions and challenges or labs. Show it to the user and get agreement before writing lesson files. Restructuring a 2,000-line lesson file after the fact is slow, and the outline is where the user's corrections are cheapest.
 
 ## 2. Scaffold
 
 ```bash
-npm run new-course -- <id> --mode compiler|lab --title "Title" --summary "One sentence for search results." [--subtitle "Top-bar subtitle"] [--tag "C17"]
+npm run new-course -- <id> --mode compiler|lab --title "Title" --summary "One sentence for search results." [--subtitle "Top-bar subtitle"] [--tag "C17"] [--language rust] [--brand "Rust"]
 npm run check -- <id>
 ```
 
@@ -54,7 +58,9 @@ The scaffold gives the course a unique storage key (`<id>-v1`) and a `wrangler.j
 Read `references/lesson-format.md` before writing. It documents every lesson field, block, figure, question kind, challenge option and lab field, and what the verifier enforces. Then read the closest existing lessons to match the house style:
 
 - For a compiler course, read `courses/c-intro/lessons/02-pointers.js` for prose, questions, and the `trace`, `memory` and `strip` figures. Read `04-data-and-heap.js` for `prelude`, `track: true` and `FAIL_ALLOCATIONS_AFTER`.
+- For a Rust course, read the "Rust courses" section of the reference, then these lessons in `courses/rust-intro/lessons/`: `ownership` in `02-ownership.js` for cells that are meant to fail (`fails`, `panics`), the `moved` state in traces, and repair challenges with `forbid: ['clone']`; `mutable-borrows` in `03-borrowing.js` for the `borrows` figure; `smart-pointers` in `09-shared-ownership.js` for allocation-checked challenges (`track: true`). `01-foundations.js` sets the tone and depth.
 - For a lab course, read `courses/c-inotify/lessons/01-anatomy-of-a-save.js`.
+- For a lab course in a language other than C, read `courses/lean-intro/README.md` and one of its part files. Its labs are files with holes, generated from one checked source, and its `checks.cjs` makes the language's own compiler confirm every block the lessons quote. Follow that pattern whenever a toolchain can check the content: write the code first, copy it into the lesson, and let a check fail when the two differ.
 
 Split lessons into files by part, `lessons/NN-slug.js`, each pushing its lessons onto `window.C_LESSONS`. A short course may keep two small parts in one file, as `c-inotify` does. The sidebar groups lessons by their `category` string, not by file. Every file needs a `<script defer src="lessons/NN-slug.js">` line in `index.html`, in order and before the engine scripts. To replace the sample, either overwrite `lessons/01-getting-started.js`, or delete it and change its `<script>` line. The settings check fails on a script that doesn't exist.
 
@@ -69,6 +75,8 @@ What makes these courses work, and why:
 
 Work one part at a time: write it, run `npm run check -- <id>`, fix it, then go on. The checks pinpoint failures by lesson, section and question. A whole course written blind tends to produce a wall of failures.
 
+A large course can be written by several writers at once, as `rust-intro` was (`docs/rust-intro-plan.md` has the plan they worked from). What made that work: one finished part as the exemplar; a plan that fixes every lesson id, challenge id and section list; a table of what each lesson may assume the learner has seen, so a writer need not read lessons that don't exist yet; one file per writer, of two or three lessons; and each lesson saved to its file as a full draft and brought to `ok` with `--only <lesson>` before the next is started. Afterwards, read every sentence that names another lesson and check the claim against that lesson.
+
 ## 4. Verify
 
 ```bash
@@ -76,6 +84,8 @@ npm run check -- <id>                     # settings of every course, then this 
 node tools/verify.cjs <id> --only <text>  # compiler courses: lessons whose id contains <text>, skipping checks.cjs
 node tools/verify.cjs <id> --native       # compiler courses: also build each program with the system clang under ASan and UBSan
 node tools/verify.cjs <id> --shots <dir>  # screenshots, saved in <dir>/<id>/
+node tools/verify.cjs <id> --record       # Rust courses: rewrite lessons/recorded.js, the output of cells that are meant to fail
+node tools/verify.cjs <id> --live --only <text>  # Rust courses: send one cell and one solution to the real Playground
 ```
 
 - **`--native`** prints the same lines as a normal run. Only problems show up, plus the extra time.
@@ -108,7 +118,7 @@ module.exports = async function checkSomething({ browser, cdp, until, delay, fai
 };
 ```
 
-See `courses/c-inotify/checks.cjs` for a download check and `courses/c-intro/checks.cjs` for a full interface walk-through.
+See `courses/c-inotify/checks.cjs` for a download check, and `courses/c-intro/checks.cjs` or `courses/rust-intro/checks.cjs` for a full interface walk-through.
 
 ## 6. Wire it into the repository
 
@@ -125,8 +135,8 @@ A deploy publishes to the internet. A course's first deploy also creates a DNS r
 
 1. `npm run preview -- <id>`, then `node tools/verify.cjs <id> --url http://127.0.0.1:8787`, which checks the built copy as Cloudflare serves it.
 2. `npm run deploy:dry-run -- <id>`.
-3. With the user's go-ahead: `npm run deploy -- <id>`. It needs a Wrangler login, which the user does once with `npx wrangler login`. If `npx wrangler whoami` fails, ask them to log in. Don't try to work around it.
-4. `node tools/verify.cjs <id> --url https://<id>.courses.bitshield.dev/`, then record the date, the version ID Wrangler printed and a one-line note in the course README's deployment history.
+3. With the user's go-ahead: `npm run deploy -- <id>`. It needs a Wrangler login, which the user does once with `npx wrangler login`. If `npx wrangler whoami` fails, ask them to log in. Don't try to work around it. If a first deploy stops after `Uploaded <id>` with error 10007 ("This Worker does not exist"), run the same command again; `docs/deploy-cloudflare.md` explains why.
+4. `node tools/verify.cjs <id> --url https://<id>.courses.bitshield.dev/` (for a Rust course, also once with `--live`, which uses the real Playground), then record the date, the version ID Wrangler printed and a one-line note in the course README's deployment history.
 
 `docs/deploy-cloudflare.md` covers rollback and the details.
 
