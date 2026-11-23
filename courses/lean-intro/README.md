@@ -104,4 +104,4 @@ The lab commands in the lessons fetch files from `https://lean-intro.courses.bit
 
 | Date | Version ID | Notes |
 | --- | --- | --- |
-| 2026-11-23 | `6e501ee8-0744-438a-bf00-cdfd058839b7` | First deploy: 16 lessons. Full suite passed on the `workers.dev` copy. On the course address the home page, health check, 404 page and five lab files were fetched and matched the source. |
+| 2026-11-23 | `6e501ee8-0744-438a-bf00-cdfd058839b7` | First deploy: 16 lessons. Full suite passed live, on the course address and on the `workers.dev` copy. |
