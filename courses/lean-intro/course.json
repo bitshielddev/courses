@@ -1,0 +1,9 @@
+{
+  "title": "Lean / Field Manual",
+  "summary": "An interactive Lean 4 course for programmers who know Python. Write programs, state what correct means as a theorem, and prove it.",
+  "publish": [
+    "index.html",
+    "lessons",
+    "lab"
+  ]
+}

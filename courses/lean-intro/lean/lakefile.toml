@@ -1,0 +1,15 @@
+# Builds every Lean source the course shows or hands out, so nothing reaches a learner unchecked.
+# `lake build --wfail` here is run by ../checks.cjs. This folder is not published.
+name = "lean_intro_sources"
+defaultTargets = ["Reading", "Labs"]
+
+# Reading/LNN.lean holds the code and messages quoted in lesson NN, in reading order.
+[[lean_lib]]
+name = "Reading"
+globs = ["Reading.+"]
+
+# Labs/LabNN.lean is lesson NN's lab with its solutions. labs.cjs turns it into the two
+# published files: ../lab/LabNN.lean (holes) and ../lab/solutions/LabNN.lean.
+[[lean_lib]]
+name = "Labs"
+globs = ["Labs.+"]
