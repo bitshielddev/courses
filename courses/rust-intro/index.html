@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="An interactive Rust course for programmers who know Python, PHP or TypeScript. Read, run and write Rust in your browser.">
+    <meta name="theme-color" content="#17211d">
+    <title>Rust / Field Manual</title>
+    <link rel="canonical" href="https://rust-intro.courses.bitshield.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Rust / Field Manual">
+    <meta property="og:description" content="An interactive Rust course for programmers who know Python, PHP or TypeScript. Read, run and write Rust in your browser.">
+    <meta property="og:url" content="https://rust-intro.courses.bitshield.dev/">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%2317211d'/%3E%3Cpath d='m9 13 7 7-7 7m12 0h10' fill='none' stroke='%23bff2cb' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="../../engine/core/styles.css">
+    <script defer src="lessons/recorded.js"></script>
+    <script defer src="lessons/01-foundations.js"></script>
+    <script defer src="lessons/02-ownership.js"></script>
+    <script defer src="lessons/03-borrowing.js"></script>
+    <script defer src="lessons/04-borrowing-at-work.js"></script>
+    <script defer src="lessons/05-data.js"></script>
+    <script defer src="lessons/06-option-and-collections.js"></script>
+    <script defer src="lessons/07-abstraction.js"></script>
+    <script defer src="lessons/08-iterators-and-errors.js"></script>
+    <script defer src="lessons/09-shared-ownership.js"></script>
+    <script defer src="lessons/10-wider-language.js"></script>
+    <script defer src="lessons/11-unsafe-and-beyond.js"></script>
+    <script defer src="../../engine/core/ui.js"></script>
+    <script defer src="../../engine/core/widgets.js"></script>
+    <script defer src="../../engine/rust/driver.js"></script>
+    <script defer src="../../engine/rust/runtime.js"></script>
+    <script defer src="../../engine/core/app.js"></script>
+  </head>
+  <body data-mode="compiler" data-language="rust" data-storage-key="rust-intro-v1">
+    <a class="skip-link" href="#lesson-title">Skip to the lesson</a>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Rust Field Manual, first lesson">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 6 6 6-6 6m9 0h7"/></svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-name">Rust <span class="brand-divider">/</span> Field Manual</span>
+          <span class="brand-subtitle">Interactive programming course</span>
+        </span>
+      </a>
+      <div class="topbar-meta">
+        <span class="version-tag"><span class="version-dot" aria-hidden="true"></span>Rust 2024</span>
+        <div class="top-progress">
+          <span id="top-progress-label">0 lessons</span>
+          <span class="top-progress-track" aria-hidden="true"><span id="top-progress-fill" class="top-progress-fill"></span></span>
+        </div>
+        <button class="mobile-menu-toggle" type="button" aria-controls="sidebar" aria-expanded="false">Contents</button>
+      </div>
+    </header>
+
+    <div class="app-shell">
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-inner">
+          <div class="sidebar-heading">
+            <h2 id="contents-title" class="sidebar-title">Contents</h2>
+            <span id="lesson-count" class="sidebar-eyebrow"></span>
+          </div>
+          <nav id="chapter-list" class="chapter-list" aria-labelledby="contents-title"></nav>
+          <a class="course-link" href="../c-intro/index.html" data-published-href="https://c-intro.courses.bitshield.dev/">
+            <small>Same series</small>
+            <span>C / Field Manual <span aria-hidden="true">→</span></span>
+          </a>
+          <div class="sidebar-progress">
+            <div class="sidebar-progress-heading">
+              <span>Course progress</span>
+              <span id="sidebar-progress-label">0%</span>
+            </div>
+            <div id="sidebar-progress-bar" class="sidebar-progress-track" role="progressbar" aria-label="Course progress" aria-valuemin="0" aria-valuemax="1" aria-valuenow="0">
+              <span id="sidebar-progress-fill" class="sidebar-progress-fill"></span>
+            </div>
+            <p class="progress-caption" id="progress-caption"></p>
+          </div>
+        </div>
+      </aside>
+
+      <main id="main-content" class="main-content">
+        <header class="lesson-header" id="lesson-header">
+          <div class="lesson-breadcrumb">
+            <span id="lesson-category"></span>
+            <span aria-hidden="true">/</span>
+            <span id="lesson-kicker" class="lesson-kicker"></span>
+          </div>
+          <h1 class="lesson-title" tabindex="-1" id="lesson-title">Rust / Field Manual</h1>
+          <p id="lesson-summary" class="lesson-summary"></p>
+          <div id="lesson-meta" class="lesson-meta"></div>
+        </header>
+        <div class="lesson-tabs" role="tablist" aria-label="Lesson activities" id="lesson-tabs"></div>
+        <div id="lesson-stage" class="lesson-layout" role="tabpanel" tabindex="-1"></div>
+        <footer id="lesson-footer" class="lesson-footer"></footer>
+        <noscript><p>Enable JavaScript in your browser to take the interactive course.</p></noscript>
+      </main>
+    </div>
+  </body>
+</html>

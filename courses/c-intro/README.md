@@ -6,7 +6,7 @@ An interactive C17 course for programmers who know Python, PHP or TypeScript. It
 - Live: https://c-intro.courses.bitshield.dev (checking copy: https://c-intro.nixprivacy.workers.dev)
 - Local: open [index.html](index.html) straight from this folder.
 - Saved progress: `localStorage["c-field-manual-v2"]`. Progress from the first edition (`c-field-manual-v1`) is migrated on first load through each challenge's `legacy` id. Never change either key.
-- Links to: [Anatomy of a Neovim save](../c-inotify/README.md), from the sidebar.
+- Links to: [Anatomy of a Neovim save](../c-inotify/README.md) and [Rust / Field Manual](../rust-intro/README.md), from the sidebar. The Rust link was added on 2026-11-23, the day `rust-intro` went live. It is in this folder but not in the live copy of this course: it reaches learners with the next deploy of `c-intro`, which also carries the engine changes made for Rust.
 
 ## Files
 

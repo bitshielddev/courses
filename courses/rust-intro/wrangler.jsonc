@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // Must match the folder name. tools/courses.cjs refuses anything else, so one course cannot deploy over another.
+  "name": "rust-intro",
+  // The Workers runtime version. Set it when the course is created; change it on purpose, not on every deploy.
+  "compatibility_date": "2026-11-22",
+  // Assets only: no Worker script. `npm run deploy -- rust-intro` builds dist/rust-intro/ first. Paths are relative to this file.
+  "assets": {
+    "directory": "../../dist/rust-intro",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  // The first deploy creates the DNS record and certificate in the bitshield.dev zone.
+  "routes": [{ "pattern": "rust-intro.courses.bitshield.dev", "custom_domain": true }]
+}

@@ -6,10 +6,11 @@ Interactive programming courses that share one lesson engine. Each course is a s
 | --- | --- | --- | --- |
 | [C / Field Manual](courses/c-intro/README.md): C17 for programmers who know Python, PHP or TypeScript. 20 lessons with questions and graded challenges. | compiler | https://c-intro.courses.bitshield.dev | [index.html](courses/c-intro/index.html) |
 | [Anatomy of a Neovim save](courses/c-inotify/README.md): systems project 01. Build an inotify monitor in C on NixOS and use it to find out what `:w` does. | lab | https://c-inotify.courses.bitshield.dev | [index.html](courses/c-inotify/index.html) |
+| [Rust / Field Manual](courses/rust-intro/README.md): Rust for programmers who know Python, PHP or TypeScript. 24 lessons on ownership, borrowing and the rest of the language, with questions and graded challenges. | compiler (Rust) | https://rust-intro.courses.bitshield.dev | [index.html](courses/rust-intro/index.html) |
 
 A course is in one of two **modes**, set by `data-mode` on its page's `<body>`:
 
-- **compiler**: C compiles and runs in the browser with a bundled WebAssembly Clang. Lessons have runnable cells, predict-the-output questions and challenges graded by tests.
+- **compiler**: C compiles and runs in the browser with a bundled WebAssembly Clang. Lessons have runnable cells, predict-the-output questions and challenges graded by tests. A compiler course with `data-language="rust"` on `<body>` teaches Rust instead: its code runs through the Rust Playground, and the checks use the `rustc` on this machine.
 - **lab**: the practical work happens on the learner's Linux machine. The **Linux lab** tab gives instructions, checks to tick and a notebook saved in the browser. The compiler isn't loaded.
 
 ## Layout
@@ -26,12 +27,14 @@ courses/<id>/          one folder per course; <id> is also its Worker name and s
 engine/                the shared lesson engine; each course publishes the modules it loads
   core/                page logic, markup helpers, figures and styles (every course)
   compiler/            in-browser C compiler and challenge test driver (compiler courses)
+  rust/                Rust Playground client and challenge test driver (Rust compiler courses)
   lab/                 Linux lab notebook (lab courses)
 public/                404 page, headers, health check and robots.txt, copied into every course
 tools/
   courses.cjs          finds courses and checks their settings agree
   new-course.mjs       creates a course folder with a sample lesson that passes the checks
   verify.cjs           checks courses in headless Chrome
+  rust-local.cjs       stands in for the Rust Playground during checks, using the local rustc
   build.mjs            copies courses into dist/<id>/
   cloudflare.mjs       runs Wrangler for one course: preview, dry run or deploy
   templates/           the sample lessons new-course.mjs starts from

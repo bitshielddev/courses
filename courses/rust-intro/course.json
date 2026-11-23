@@ -1,0 +1,8 @@
+{
+  "title": "Rust / Field Manual",
+  "summary": "An interactive Rust course for programmers who know Python, PHP or TypeScript. Read, run and write Rust in your browser.",
+  "publish": [
+    "index.html",
+    "lessons"
+  ]
+}
