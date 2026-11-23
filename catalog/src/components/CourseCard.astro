@@ -1,0 +1,24 @@
+---
+import type { availableCourses } from '../data/courses';
+interface Props {
+  course: (typeof availableCourses)[number];
+}
+const { course } = Astro.props;
+---
+<article class="course">
+  <div class:list={['cover', course.theme]} aria-hidden="true">
+    <span class="cover-mark">{course.cover}</span>
+    <div class="cover-figure">
+      {course.theme === 'forest' && <div class="memory"><i></i><i></i><i></i><i></i></div>}
+      {course.theme === 'orange' && <div class="events"><i></i><i></i><i></i></div>}
+      {course.theme === 'ochre' && <div class="move"><i></i><i></i><i></i></div>}
+      {course.theme === 'navy' && <div class="proof"><i></i><i></i><i></i><i></i></div>}
+    </div>
+  </div>
+  <div class="course-info">
+    <p class="course-meta">{course.format}<span class="meta-dot">·</span>{course.lessons} lessons</p>
+    <h3><a href={course.url}>{course.title}</a></h3>
+    <p class="course-description">{course.description}</p>
+    <span class="open-course" aria-hidden="true">Open course <span>↗</span></span>
+  </div>
+</article>

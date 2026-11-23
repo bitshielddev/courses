@@ -2,6 +2,8 @@
 
 Interactive programming courses that share one lesson engine. Each course is a static site on its own Cloudflare Worker and subdomain. Every course opens straight from disk (`file://`) as well.
 
+Browse the [course catalog](https://courses.bitshield.dev/) for live courses and courses in development. The [catalog project](catalog/README.md) is a separate Astro site.
+
 | Course | Mode | Live | Local |
 | --- | --- | --- | --- |
 | [C / Field Manual](courses/c-intro/README.md): C17 for programmers who know Python, PHP or TypeScript. 20 lessons with questions and graded challenges. | compiler | https://c-intro.courses.bitshield.dev | [index.html](courses/c-intro/index.html) |

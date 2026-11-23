@@ -1,0 +1,56 @@
+---
+import '@fontsource-variable/dm-sans/wght.css';
+import '@fontsource/barlow-condensed/latin-700.css';
+import '@fontsource/ibm-plex-mono/latin-400.css';
+import '../styles/base.css';
+import fieldManuals from '../assets/field-manuals.webp';
+import { upcomingCourses } from '../data/courses';
+
+interface Props {
+  title: string;
+  description: string;
+  missing?: boolean;
+}
+
+const { title, description, missing = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f6ef" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {missing ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL(fieldManuals.src, Astro.site)} />
+    <meta property="og:image:alt" content="Green and orange computing field manuals stacked on a desk" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/terminal.svg" type="image/svg+xml" />
+  </head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="masthead">
+      <div class="wrap masthead-inner">
+        <a class="brand" href="/" aria-label="Bitshield Courses home">
+          <img src="/terminal.svg" width="31" height="31" alt="" />
+          <span>Bitshield<span class="brand-slash">/</span><span class="brand-section">Courses</span></span>
+        </a>
+        <nav aria-label="Course catalog">
+          <a href="/#available">Available courses</a>
+          {upcomingCourses.length > 0 && <a href="/#in-development">In development</a>}
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer class="footer wrap">
+      <span class="footer-brand"><img src="/terminal.svg" alt="" width="20" height="20" /> Bitshield Courses</span>
+      <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
+    </footer>
+  </body>
+</html>

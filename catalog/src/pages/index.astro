@@ -1,0 +1,44 @@
+---
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import CourseCard from '../components/CourseCard.astro';
+import { availableCourses, upcomingCourses } from '../data/courses';
+import fieldManuals from '../assets/field-manuals.webp';
+---
+<Layout
+  title="Bitshield Courses | Programming field manuals"
+  description="Explore Bitshield’s self-paced programming courses and systems labs. Learn C and Rust in the browser, prove programs correct in Lean, and trace a Neovim save on Linux."
+>
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span aria-hidden="true"></span>Self-paced courses &amp; labs</p>
+        <h1 id="hero-title">Programming<br />field manuals<span class="period">.</span></h1>
+        <p class="intro">Explore how programs work, from a pointer in C to the Linux events behind a Neovim save.</p>
+        <a class="button" href="#available">Browse courses <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-photo">
+        <Image src={fieldManuals} alt="" widths={[480, 768, 1056, 1440]} sizes="(max-width: 680px) 100vw, (max-width: 1360px) 49vw, 635px" width={1056} height={704} format="webp" quality={78} loading="eager" fetchpriority="high" />
+      </div>
+    </section>
+    <section class="catalog-section" id="available" aria-labelledby="available-title">
+      <h2 class="section-heading" id="available-title">Available courses</h2>
+      <div class="course-grid">
+        {availableCourses.map(course => <CourseCard course={course} />)}
+      </div>
+    </section>
+    {upcomingCourses.length > 0 && (
+      <section class="catalog-section upcoming" id="in-development" aria-labelledby="upcoming-title">
+        <h2 class="section-heading" id="upcoming-title">In development</h2>
+        <div class="course-grid">
+          {upcomingCourses.map(course => (
+            <article class="upcoming-course">
+              <h3>{course.title}</h3>
+              <p>{course.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+</Layout>
