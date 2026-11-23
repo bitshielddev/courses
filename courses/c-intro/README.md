@@ -6,7 +6,7 @@ An interactive C17 course for programmers who know Python, PHP or TypeScript. It
 - Live: https://c-intro.courses.bitshield.dev (checking copy: https://c-intro.nixprivacy.workers.dev)
 - Local: open [index.html](index.html) straight from this folder.
 - Saved progress: `localStorage["c-field-manual-v2"]`. Progress from the first edition (`c-field-manual-v1`) is migrated on first load through each challenge's `legacy` id. Never change either key.
-- Links to: [Anatomy of a Neovim save](../c-inotify/README.md) and [Rust / Field Manual](../rust-intro/README.md), from the sidebar. The Rust link was added on 2026-11-23, the day `rust-intro` went live. It is in this folder but not in the live copy of this course: it reaches learners with the next deploy of `c-intro`, which also carries the engine changes made for Rust.
+- Links to: [Anatomy of a Neovim save](../c-inotify/README.md) and [Rust / Field Manual](../rust-intro/README.md), from the sidebar.
 
 ## Files
 
@@ -33,3 +33,4 @@ npm run deploy -- c-intro
 | 2026-11-18 | `8f5aafe6-5e6e-4fa6-b9a3-cb6912e932cf` | First deploy: 20 lessons. Full suite passed live. |
 | 2026-11-18 | `39c7d7d7-fc45-48c8-a2fd-65aa9c8f627f` | Predict questions: note that the final `\n` needs no typing, leading spaces now count, spacing mistakes shown with dots. |
 | 2026-11-18 | `15aafe41-4adb-4886-a700-8c36596acb77` | Linked the first systems project from the foundation course sidebar. |
+| 2026-11-23 | `08abb819-dd28-43fc-b68b-11f221e0c159` | Linked the Rust course from the sidebar. Carries the shared engine changes made for the Rust and Lean courses. Full suite passed live. |
