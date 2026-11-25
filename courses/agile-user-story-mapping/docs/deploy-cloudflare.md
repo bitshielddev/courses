@@ -47,3 +47,4 @@ Use `npx wrangler deployments list` to find a previous version and `npx wrangler
 | Date | Version ID | Release |
 | --- | --- | --- |
 | 2026-11-25 | `36549d8f-739b-4ed7-ac51-c2735829da91` | First release with five lessons, the repair café map workshop and a printable team exercise. |
+| 2026-11-25 | `f049b97e-9373-4a5b-b30a-87a9b189c989` | Rewrite to nine lessons (about 45 minutes) built around one consistent story map, with a cheat sheet, a reworked team workshop and redirects from the two retired lesson addresses. |
