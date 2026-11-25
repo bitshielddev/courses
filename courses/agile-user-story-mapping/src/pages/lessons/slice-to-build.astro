@@ -1,0 +1,61 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import CardSort from '../../components/CardSort.astro';
+
+const columns = [
+  { id: 'opening', name: 'Opening game', hint: 'Working end to end, risky parts first' },
+  { id: 'mid', name: 'Midgame', hint: 'Fill in and round out' },
+  { id: 'end', name: 'Endgame', hint: 'Refine with real use' },
+];
+const items = [
+  { text: 'Slots close when a bench is full.', column: 'mid', clue: 'This is a business rule. The release needs it before the day, but a booking can travel from the form to the door without it.' },
+  { text: 'A plain form books any free slot for one session.', column: 'opening', clue: 'This is the simplest form that could take a real booking. It is the first link in the chain.' },
+  { text: 'Reword the form after watching five visitors use it.', column: 'end', clue: 'This is refinement based on real use, so it has to wait until there is something to watch.' },
+  { text: 'A booking shows up on a door list that prints.', column: 'opening', clue: 'The hand-over from form to door is the risky part. Prove it early.' },
+  { text: 'Visitors can cancel or move a booking.', column: 'mid', clue: 'This is an optional step that some visitors will take. It rounds out a booking that already works.' },
+  { text: 'A confirmation message gives the time and the room.', column: 'mid', clue: 'This builds up the booking step. The journey works without it, and is better with it.' },
+  { text: 'Make the door list readable at arm’s length.', column: 'end', clue: 'This is polish that you can only judge once a volunteer has held the real list on a real morning.' },
+  { text: 'One session appears on a bare web page.', column: 'opening', clue: 'A visitor has to be able to find the session before anything else can be tried end to end.' },
+];
+---
+<Lesson slug="slice-to-build">
+  <section class="reading">
+    <h2>A different kind of slice</h2>
+    <p>The release is decided, and nothing more can be cut from it. You slice it again anyway, this time to choose the order of building. You do not release these slices to visitors. Each one is a milestone where the team stops, looks at the whole thing working and takes stock. Is it slower than expected? Does it hold together? What did we miss?</p>
+    <p>The risk is different, too. Lesson 7 dealt with the risk of building the wrong thing. This lesson deals with the risk of not finishing: the surprise in week nine that sinks the date.</p>
+  </section>
+
+  <section class="reading">
+    <h2>How a painter finishes on time</h2>
+    <p>Patton asks you to imagine painting a portrait one finished square at a time. The top-left corner is perfect on Monday and the next square is perfect on Tuesday. If the deadline arrives early, you have part of a painting. You also learn only at the end whether the proportions were right. Teams work this way when they finish each feature completely before starting the next.</p>
+    <p>A painter sketches the whole composition first, then builds up colour and form everywhere, and spends the last days refining. Stop a painter early and you still have a whole painting, with less polish. Patton points out that the Mona Lisa has no eyebrows. Perhaps Leonardo chose that, or perhaps he ran out of time. Nobody who looks at the painting thinks it is unfinished.</p>
+    <p>Two words describe the two moves in that way of working.</p>
+    <dl class="terms">
+      <div><dt>Iterative</dt><dd>Evaluating what you have made and changing it. Rework of this kind is learning, and you should plan for it.</dd></div>
+      <div><dt>Incremental</dt><dd>Adding more: new parts, or more built on a part that already exists.</dd></div>
+    </dl>
+    <p>You need both. A team that only iterates never finishes, and a team that only adds never improves what it has.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Opening, midgame, endgame</h2>
+    <p>Patton slices every release into three, and borrows the names from chess.</p>
+    <dl class="terms">
+      <div><dt>Opening game</dt><dd>The essential steps across the whole journey, each in its simplest form, along with anything technically risky. Skip the options and the fine rules. The aim is to see the release working from end to end.</dd></div>
+      <div><dt>Midgame</dt><dd>Fill in and round out. Add the optional steps, the awkward rules and the cases that go wrong. You can now test the whole thing for speed and ease of use.</dd></div>
+      <div><dt>Endgame</dt><dd>Refine. Use real data and real feedback to polish what is there.</dd></div>
+    </dl>
+    <p>If time runs short, you cut from the endgame, and what you have still works from one end to the other.</p>
+  </section>
+
+  <CardSort name="sort-build" title="Plan the build of release 2" columns={columns} items={items} pileLabel="Pieces of release 2" choiceLabel="Choose a stage for this piece"
+    done="After the opening game, a booking travels from a web page to the door. The midgame makes it complete, and the endgame makes it pleasant. If week ten arrives early, the endgame gives way and Big Fix day still works.">
+    <p>The team has broken release 2 into eight pieces. Put each one in the stage where it should be built.</p>
+  </CardSort>
+
+  <section class="reading">
+    <h2>Why this helps the estimate</h2>
+    <p>Slice the build order as a whole team. Developers and testers are the people best placed to see where the technical risks are. Patton’s point about estimating is that the best estimates come from people who really understand what they are estimating, and the map conversation gives them that understanding.</p>
+    <p>Then treat the estimate as a budget to manage. Once the opening game is built, the team knows its real pace. With most of the ten weeks still ahead, it can decide what the midgame and endgame can afford.</p>
+  </section>
+</Lesson>

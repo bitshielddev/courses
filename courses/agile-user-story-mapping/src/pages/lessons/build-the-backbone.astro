@@ -1,0 +1,47 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import CardSort from '../../components/CardSort.astro';
+import StoryMap from '../../components/StoryMap.astro';
+import { activities, tasks } from '../../data/map';
+
+const columns = activities.map((activity) => ({ id: activity.id, name: activity.name }));
+// Shown out of order so that the reader has to think about each one.
+const shuffled = ['wait', 'date', 'details', 'fault', 'item', 'checkin', 'home', 'time'];
+const items = shuffled.map((id) => {
+  const task = tasks.find((entry) => entry.id === id)!;
+  return { text: task.name, column: task.activity, clue: task.clue };
+});
+---
+<Lesson slug="build-the-backbone">
+  <section class="reading">
+    <h2>Tell it a step at a time</h2>
+    <p>Start with one person on one occasion. Say what they do first, and write it on a card. Ask “and then?” and write the next card. Keep going until they have what they came for.</p>
+    <p>Each card is a <dfn>task</dfn>: a short verb phrase for something a person does to reach a goal. “Choose a time” is a task, and so is “Check in at the door”. Tasks are the basic building blocks of a map. They are things the user does, and have nothing to do with the development tasks on a sprint board.</p>
+    <p>Write tasks at a natural size. Patton borrows a test from Alistair Cockburn: a task is something you would expect to finish before deliberately stopping to do something else. “Choose a time” passes. “Type my surname” is too small, and “Get my lamp fixed” is too big.</p>
+    <p>Walk Sam through a visit as the team hopes it will go, and you get eight tasks.</p>
+    <ol class="walk" aria-label="Sam’s visit as eight tasks, in order">
+      {tasks.map((task) => <li>{task.name}</li>)}
+    </ol>
+    <p>Lay the cards in a row from left to right, in the order you told them. That order is the <dfn>narrative flow</dfn>. Test it by pointing at each card in turn and saying “and then Sam…”. Steps that you skipped tend to show up when you say the story aloud.</p>
+    <p>Two of these tasks need no software at all. Sam explains the fault and takes the lamp home in person. They stay on the map, because the map follows the person, and what happens away from the screen shapes what the screen should do.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Group the tasks into activities</h2>
+    <p>Step back from the row and some tasks cluster. They happen around the same time and serve the same purpose. Put a card above each cluster and name it with another verb phrase. These cards are <dfn>activities</dfn>. An activity gathers the tasks that a person does towards one common goal.</p>
+    <p>The row of activities is the <dfn>backbone</dfn> of the map. Read it on its own and you have the whole story in one breath. When you introduce the map to someone new, start by reading them the backbone.</p>
+    <p>Name each activity in the words that the people themselves use. If visitors say “getting a slot”, the card should not say “appointment management”.</p>
+  </section>
+
+  <CardSort name="sort-backbone" title="Give the walk a backbone" columns={columns} items={items} pileLabel="Sam’s tasks" choiceLabel="Choose an activity for this task"
+    done="Read the backbone aloud: Sam finds a session, books a slot, arrives and gets the lamp repaired. Each activity now carries two tasks.">
+    <p>The team has named four activities. Place each of Sam’s eight tasks under the activity it serves.</p>
+  </CardSort>
+
+  <section class="reading">
+    <h2>The map so far</h2>
+    <StoryMap show="tasks" controls={false} caption="Four activities on the backbone, with eight tasks in narrative flow beneath them. The fainter cards arrive in lesson 5." />
+    <p>At this stage the map is, in Patton’s phrase, a mile wide and an inch deep. Keep it that way for now. Resist discussing how any one step will work until the whole visit is on the wall. Lesson 3 showed what happens otherwise: five cards about booking, and none about the door.</p>
+    <p>Build the map as a group, and have everyone write. Patton’s habit is “talk and doc”: when someone says a step aloud, it goes on a card straight away, and the card goes on the wall where everyone can point at it.</p>
+  </section>
+</Lesson>

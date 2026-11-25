@@ -1,0 +1,119 @@
+---
+// A pile of cards to place under column headings. Each placement gets a reason,
+// and the cards move into their columns so the reader builds the board.
+interface Props {
+  name: string;
+  title: string;
+  columns: { id: string; name: string; hint?: string }[];
+  items: { text: string; column: string; clue: string }[];
+  // Shown once every card is in the right column.
+  done: string;
+  pileLabel?: string;
+  choiceLabel?: string;
+}
+const { name, title, columns, items, done, pileLabel = 'Cards to place', choiceLabel = 'Place this card' } = Astro.props;
+---
+<section class="card-sort" aria-labelledby={`${name}-title`} data-done={done} style={`--cols: ${columns.length}`}>
+  <h2 id={`${name}-title`}>{title}</h2>
+  <div class="sort-intro"><slot /></div>
+  <div class="source-pile">
+    <h3>{pileLabel}</h3>
+    <div class="cards" data-zone="">
+      {items.map((item) => (
+        <div class="sort-card" data-column={item.column} data-clue={item.clue}>
+          <span>{item.text}</span>
+          <select aria-label={`${choiceLabel}: ${item.text}`} autocomplete="off">
+            <option value="">Choose…</option>
+            {columns.map((column) => <option value={column.id}>{column.name}</option>)}
+          </select>
+        </div>
+      ))}
+    </div>
+  </div>
+  <div class="sort-board">
+    {columns.map((column) => (
+      <div class="sort-column">
+        <h3>{column.name}</h3>
+        {column.hint && <p class="column-hint">{column.hint}</p>}
+        <div class="cards" data-zone={column.id}></div>
+        <span class="open-space">Nothing placed</span>
+      </div>
+    ))}
+  </div>
+  <p class="sort-result" role="status" aria-atomic="true"></p>
+  <noscript>
+    <p>Sort the cards on paper, then compare your answer.</p>
+    <details>
+      <summary>Compare your answer</summary>
+      <ul>{columns.map((column) => <li><strong>{column.name}.</strong> {items.filter((item) => item.column === column.id).map((item) => item.text).join(' · ')}</li>)}</ul>
+    </details>
+  </noscript>
+</section>
+
+<script>
+  for (const sort of document.querySelectorAll<HTMLElement>('.card-sort')) {
+    const cards = Array.from(sort.querySelectorAll<HTMLElement>('.sort-card'));
+    const status = sort.querySelector<HTMLElement>('.sort-result')!;
+    const zoneOf = (card: HTMLElement) => (card.parentElement as HTMLElement).dataset.zone;
+
+    function place(card: HTMLElement, select: HTMLSelectElement) {
+      const destination = sort.querySelector<HTMLElement>(`[data-zone="${select.value}"]`)!;
+      if (card.parentElement !== destination) destination.append(card);
+      if (!select.value) delete card.dataset.fit;
+      else card.dataset.fit = select.value === card.dataset.column ? 'yes' : 'no';
+    }
+
+    for (const card of cards) {
+      const select = card.querySelector('select')!;
+      place(card, select);
+      select.addEventListener('change', () => {
+        const focused = document.activeElement === select;
+        place(card, select);
+        if (focused) select.focus();
+        const left = cards.filter((other) => zoneOf(other) !== other.dataset.column).length;
+        if (!left) {
+          status.dataset.state = 'done';
+          status.textContent = sort.dataset.done!;
+          sort.dispatchEvent(new CustomEvent('sort-complete', { bubbles: true }));
+          return;
+        }
+        delete status.dataset.state;
+        if (!select.value) status.textContent = 'Card returned to the pile.';
+        else status.textContent = (card.dataset.fit === 'yes' ? 'That fits. ' : 'Try another column. ') + card.dataset.clue;
+      });
+    }
+    sort.dataset.ready = '';
+  }
+</script>
+
+<style>
+  .card-sort { container-type: inline-size; margin: 2.2rem 0; padding: clamp(16px, 2.4vw, 28px); border: 1px solid #c8c6b7; background: #f3f0e4; }
+  .card-sort h2 { margin: 0 0 .35em; font: 400 clamp(28px, 2.8vw, 38px)/1.07 var(--serif); letter-spacing: -.02em; }
+  .sort-intro { font-size: 16px; line-height: 1.55; color: #354c42; max-width: 66ch; margin-bottom: 1rem; }
+  .card-sort h3 { margin: 0 0 .55rem; font: 650 .86rem/1.3 'DM Sans', sans-serif; }
+  .source-pile { padding: .8rem; background: #e9e5d6; border: 1px solid #c8c6b7; }
+  .source-pile:has([data-zone]:empty) { display: none; }
+  .cards { display: grid; gap: .45rem; }
+  .source-pile .cards { grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr)); }
+  .sort-card { display: flex; flex-direction: column; gap: .5rem; justify-content: space-between; min-width: 0; padding: .6rem; border: 1px solid #c9b785; border-radius: .12rem; background: #f5e4ac; box-shadow: 1px 2px 2px #524d3420; }
+  .sort-card > span { font-size: .9rem; line-height: 1.35; }
+  .sort-card[data-fit='no'] { border: 1px dashed #a15e3d; background: #f3ddc9; }
+  .sort-card select { display: none; max-width: 100%; min-width: 0; width: 100%; min-height: 36px; padding: .35rem .25rem; border: 1px solid #968961; border-radius: .15rem; color: #223f32; background: #fffcf1; font: inherit; font-size: .84rem; }
+  [data-ready] .sort-card select { display: block; }
+  .sort-card select:focus-visible { outline: 3px solid #345a48; outline-offset: 2px; }
+  .sort-board { display: none; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 1px; margin-top: .65rem; background: #b3bba7; border: 1px solid #b3bba7; }
+  [data-ready] .sort-board { display: grid; }
+  .sort-column { min-width: 0; padding: .7rem; background: #eaf0e3; }
+  .column-hint { margin: -.3rem 0 .6rem; font-size: .8rem; line-height: 1.4; color: #4c5b4f; }
+  .open-space { color: #566354; font-size: .82rem; }
+  .cards:not(:empty) + .open-space { display: none; }
+  .sort-result:not(:empty) { margin-top: .8rem; padding: .6rem .85rem; border-left: .2rem solid #a15e3d; background: #fbf8ee; font-size: .94rem; line-height: 1.5; }
+  .sort-result[data-state='done'] { border-color: #457254; background: #e6ecd9; }
+  .sort-result:empty { margin: 0; }
+  @container (max-width: 40rem) {
+    .sort-board { grid-template-columns: 1fr; }
+    .source-pile .cards { grid-template-columns: 1fr; }
+    .sort-card { flex-direction: row; align-items: center; }
+    .sort-card select { width: min(46%, 9.5rem); min-height: 44px; flex-shrink: 0; }
+  }
+</style>

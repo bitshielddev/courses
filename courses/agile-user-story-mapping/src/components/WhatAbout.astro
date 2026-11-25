@@ -1,0 +1,74 @@
+---
+// Lesson 5: each "what about…?" question uncovers a card in the body of the map.
+import StoryMap from './StoryMap.astro';
+import { cards, taskName } from '../data/map';
+
+const prompts = cards.filter((card) => card.whatAbout);
+---
+<section class="what-about" aria-labelledby="what-about-title">
+  <h2 id="what-about-title">Ask “what about…?”</h2>
+  <p class="wa-intro">The map below shows the team’s first pass. The dashed spaces are cards that nobody has thought of yet. Ask each question to find the card it uncovers.</p>
+  <StoryMap show="body" explore caption="Details, alternatives and exceptions sit beneath the task they belong to." />
+  <ul class="wa-prompts">
+    {prompts.map((card) => (
+      <li>
+        <button type="button" data-find={card.id} aria-expanded="false" hidden>{card.whatAbout!.question}</button>
+        <div class="wa-found">
+          <p class="wa-question">{card.whatAbout!.question}</p>
+          <p><strong>{card.whatAbout!.kind}.</strong> {card.whatAbout!.found} New card under “{taskName(card.task)}”: <em>{card.title}</em>.</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+  <p class="wa-count" role="status" hidden></p>
+</section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.what-about')) {
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-find]'));
+    const count = root.querySelector<HTMLElement>('.wa-count')!;
+    const notes = Array.from(root.querySelectorAll<HTMLElement>('[data-wa]'));
+    for (const note of notes) note.setAttribute('aria-hidden', 'true');
+    root.dataset.ready = '';
+    count.hidden = false;
+    count.textContent = `0 of ${buttons.length} cards found.`;
+    for (const button of buttons) {
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        button.setAttribute('aria-expanded', 'true');
+        button.closest('li')!.classList.add('is-open');
+        const note = root.querySelector<HTMLElement>(`[data-wa="${button.dataset.find}"]`);
+        if (note) {
+          note.classList.add('is-found');
+          note.removeAttribute('aria-hidden');
+          const scroller = note.closest<HTMLElement>('.map-scroll');
+          // Bring the new card into view on a narrow screen, where the map scrolls sideways.
+          if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+            scroller.scrollTo({ left: note.offsetLeft - scroller.clientWidth / 2 + note.offsetWidth / 2, behavior: 'smooth' });
+          }
+        }
+        const found = buttons.filter((other) => other.getAttribute('aria-expanded') === 'true').length;
+        count.textContent = found === buttons.length
+          ? `All ${found} cards found. The map has grown from fourteen body cards to twenty-one.`
+          : `${found} of ${buttons.length} cards found.`;
+      });
+    }
+  }
+</script>
+
+<style>
+  .what-about { margin: 2.2rem 0; padding: clamp(16px, 2.4vw, 28px); border: 1px solid #c8c6b7; background: #f3f0e4; }
+  .what-about h2 { margin: 0 0 .35em; font: 400 clamp(28px, 2.8vw, 38px)/1.07 var(--serif); letter-spacing: -.02em; }
+  .wa-intro { font-size: 16px; line-height: 1.55; color: #354c42; max-width: 66ch; margin-bottom: .6rem; }
+  .wa-prompts { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; gap: .45rem; }
+  .wa-prompts button { width: 100%; min-height: 44px; padding: .6rem .8rem; text-align: left; border: 1px solid #a1afa0; border-radius: 3px; background: #fbfaf3; color: var(--ink); font: 600 15px/1.35 'DM Sans', sans-serif; }
+  .wa-prompts button::before { content: '?'; display: inline-block; width: 1.4em; color: var(--rust); font-weight: 700; }
+  .wa-prompts button:hover { border-color: #637b62; background: #eef1e5; }
+  .wa-found { padding: .65rem .85rem; border-left: .2rem solid #457254; background: #e6ecd9; font-size: .94rem; line-height: 1.5; }
+  .wa-question { font-weight: 650; }
+  [data-ready] .wa-found { display: none; }
+  [data-ready] .is-open .wa-found { display: block; }
+  [data-ready] .is-open .wa-question, [data-ready] .is-open button::before { display: none; }
+  [data-ready] .is-open button { border-color: transparent; background: transparent; padding-bottom: .2rem; min-height: 0; cursor: default; }
+  .wa-count { margin-top: .8rem; font: 500 12px/1.45 var(--mono); color: var(--ink); }
+</style>

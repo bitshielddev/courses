@@ -1,0 +1,53 @@
+---
+// A choice with a reason for every option. It does not count towards progress.
+interface Props {
+  name: string;
+  title: string;
+  options: { label: string; feedback: string; best?: boolean }[];
+}
+const { name, title, options } = Astro.props;
+---
+<section class="decision" aria-labelledby={`${name}-title`}>
+  <h2 id={`${name}-title`}>{title}</h2>
+  <div class="decision-intro"><slot /></div>
+  <ul>
+    {options.map((option) => (
+      <li data-best={option.best ? '' : undefined}>
+        <button type="button" aria-expanded="false" hidden>{option.label}</button>
+        <div class="decision-why">
+          <p class="decision-label">{option.label}</p>
+          <p><strong>{option.best ? 'Test this first.' : 'Not first.'}</strong> {option.feedback}</p>
+        </div>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.decision')) {
+    root.dataset.ready = '';
+    for (const button of root.querySelectorAll<HTMLButtonElement>('button')) {
+      button.hidden = false;
+      button.addEventListener('click', () => {
+        const open = button.getAttribute('aria-expanded') !== 'true';
+        button.setAttribute('aria-expanded', String(open));
+        button.closest('li')!.classList.toggle('is-open', open);
+      });
+    }
+  }
+</script>
+
+<style>
+  .decision { margin: 2.2rem 0; padding: clamp(16px, 2.4vw, 28px); border: 1px solid #c8c6b7; background: #f3f0e4; }
+  .decision h2 { margin: 0 0 .35em; font: 400 clamp(28px, 2.8vw, 38px)/1.07 var(--serif); letter-spacing: -.02em; }
+  .decision-intro { font-size: 16px; line-height: 1.55; color: #354c42; max-width: 66ch; }
+  .decision ul { list-style: none; padding: 0; margin: .9rem 0 0; display: grid; gap: .45rem; }
+  .decision button { width: 100%; min-height: 44px; padding: .65rem .8rem; text-align: left; border: 1px solid #c9b785; border-radius: .12rem; background: #f5e4ac; color: var(--ink); font: 600 15px/1.35 'DM Sans', sans-serif; box-shadow: 1px 2px 2px #524d3420; }
+  .decision button:hover { border-color: #8a7a45; }
+  .decision-why { padding: .6rem .85rem; border-left: .2rem solid #a15e3d; background: #fbf8ee; font-size: .94rem; line-height: 1.5; }
+  .decision-label { font-weight: 650; }
+  [data-best] .decision-why { border-color: #457254; background: #e6ecd9; }
+  [data-ready] .decision-why { display: none; margin-top: .3rem; }
+  [data-ready] .is-open .decision-why { display: block; }
+  [data-ready] .decision-label { display: none; }
+</style>

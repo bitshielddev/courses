@@ -1,0 +1,37 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import SliceLab from '../../components/SliceLab.astro';
+import StoryMap from '../../components/StoryMap.astro';
+import { releases } from '../../data/map';
+---
+<Lesson slug="slice-a-release">
+  <section class="reading">
+    <h2>Slice across, by outcome</h2>
+    <p>A <dfn>slice</dfn> is a horizontal cut across the map. The cards above the line are in the release, and the cards below it wait. Because the line crosses every activity, what sits above it is a whole journey that a person could complete. A release made of finished features from one corner of the product would not be.</p>
+    <p>You decide where to cut by outcome. Write the outcome you want at the left edge of the slice: who it is for, and what will change for them. Then go through the map column by column and ask of each card, “Does this visitor need this to get that result?” If the answer is no, the card moves below the line.</p>
+    <p>Patton’s rule is to focus on what you hope will happen outside the system when you decide what goes inside it. This is why lesson 2 came first. An argument that ranks features against each other never ends. Ranking them against one specific outcome is quick.</p>
+  </section>
+
+  <section class="reading">
+    <h2>The smallest release that works</h2>
+    <p>What survives the cut is a <dfn>minimum viable product</dfn>, which Patton defines as “the smallest product release that successfully achieves its desired outcomes”. Two words in the name are often misread.</p>
+    <ul>
+      <li><strong>Minimum</strong> does not mean shabby. The release has to work properly for the people it is aimed at.</li>
+      <li><strong>Viable</strong> is specific. It means viable for these users and this outcome, which is what allows you to leave other people out for now.</li>
+    </ul>
+    <p>The café’s first outcome is the one it framed in lesson 2: <em>{releases[0].outcome}</em> Visitors with jeans or bikes carry on as they do today. They have not been forgotten. They are in a later slice.</p>
+  </section>
+
+  <SliceLab />
+
+  <section class="reading">
+    <h2>Then slice the rest into a roadmap</h2>
+    <p>Repeat the cut below the first line, and give each slice its own outcome. The map becomes a release roadmap.</p>
+    <StoryMap show="releases" controls={false} />
+    <ol class="release-list">
+      {releases.map((release) => <li><strong>{release.name}.</strong> {release.outcome}</li>)}
+    </ol>
+    <p>A roadmap built this way is a list of outcomes in order. Noor can discuss that with the library far more easily than a list of features.</p>
+    <p>Look at what the first slice turned out to be: a poster, a phone and a sheet of paper. The team was asked for a calendar and is planning to print a poster. Patton says teams are often shocked at how small a viable release is once they slice by outcome.</p>
+  </section>
+</Lesson>

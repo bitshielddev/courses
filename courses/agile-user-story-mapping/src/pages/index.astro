@@ -1,0 +1,73 @@
+---
+import CourseLayout from '../layouts/CourseLayout.astro';
+import StoryMap from '../components/StoryMap.astro';
+import { lessons, parts, steps, totalMinutes, lessonHref } from '../data/lessons';
+---
+<CourseLayout title="User Story Mapping" description="Learn user story mapping in nine short lessons. Follow one repair café visit from a one-line request to a story map, a first release and a build plan.">
+  <main id="main" class="shell">
+    <section class="hero" aria-labelledby="course-title">
+      <div class="hero-copy">
+        <p class="kicker"><span class="note-mark" aria-hidden="true"></span> Agile field manual</p>
+        <h1 id="course-title">User story <em>mapping.</em></h1>
+        <p class="lede">The main ideas of Jeff Patton’s book in nine short lessons. You follow one team as it turns a one-line request into a story map, a first release and a build plan.</p>
+        <div class="hero-actions">
+          <a class="primary" href={lessonHref(lessons[0].slug)} data-start><span>Start the course</span><span aria-hidden="true">→</span></a>
+          <span class="duration"><span class="clock" aria-hidden="true"></span> About {totalMinutes} min</span>
+        </div>
+      </div>
+      <StoryMap show="body" controls />
+    </section>
+
+    <section class="premise" aria-labelledby="premise-title">
+      <div>
+        <p class="kicker short-rule">The example</p>
+        <h2 id="premise-title">One request, followed all the way</h2>
+      </div>
+      <div class="premise-copy">
+        <p>A volunteer-run repair café has a problem. Visitors carry broken lamps and toasters across town, queue, and find that nobody on duty can fix them. The coordinator asks your team for a booking calendar.</p>
+        <p>Every lesson works on that one request and the same story map, which is shown above. You watch the map gain a backbone and a body, then cut it into releases.</p>
+      </div>
+      <ol class="step-list" aria-label="The six steps of story mapping">
+        {steps.map((step, index) => <li><span class="lesson-num">{index + 1}</span><span><strong>{step.long}.</strong> {step.gist}</span></li>)}
+      </ol>
+    </section>
+
+    <section class="syllabus" id="lessons" aria-labelledby="lesson-list">
+      <div class="syllabus-intro">
+        <p class="kicker short-rule">Course outline</p>
+        <h2 id="lesson-list">The lessons</h2>
+        <p>Each lesson takes four to seven minutes. It explains one idea, shows it on the café’s map, and gives you an exercise and a check question.</p>
+        <p class="progress-text" data-progress hidden></p>
+      </div>
+      <div class="parts">
+        {parts.map((part) => (
+          <div class="part">
+            <h3 class="part-title">{part.title}</h3>
+            <ol class="lesson-list">
+              {lessons.map((lesson, index) => lesson.part === part.id && (
+                <li>
+                  <a class="lesson-link" href={lessonHref(lesson.slug)} data-course-lesson={lesson.slug}>
+                    <span class="lesson-num">{String(index + 1).padStart(2, '0')}</span>
+                    <span class="lesson-blurb"><strong>{lesson.title}</strong><span>{lesson.summary}</span></span>
+                    <span class="lesson-time">{lesson.minutes} min</span><span class="row-arrow" aria-hidden="true">↗</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="strips">
+      <aside class="workshop-strip">
+        <div><p class="kicker">Cheat sheet</p><h2>The whole method on one page</h2><p>The six steps, the parts of a map and a glossary, ready to print.</p></div>
+        <a class="secondary" href="/cheat-sheet/">Open the cheat sheet <span aria-hidden="true">→</span></a>
+      </aside>
+      <aside class="workshop-strip">
+        <div><p class="kicker">Team workshop</p><h2>Map something real together</h2><p>A ten-minute warm-up and a thirty-minute first map for your own team.</p></div>
+        <a class="secondary" href="/workshop/">Open the workshop <span aria-hidden="true">→</span></a>
+      </aside>
+    </div>
+  </main>
+</CourseLayout>

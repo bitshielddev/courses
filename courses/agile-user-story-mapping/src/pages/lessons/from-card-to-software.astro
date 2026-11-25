@@ -1,0 +1,58 @@
+---
+import Lesson from '../../components/Lesson.astro';
+---
+<Lesson slug="from-card-to-software">
+  <section class="reading">
+    <h2>Stories get smaller as they get closer</h2>
+    <p>Stories come in many sizes. Patton compares them to rocks: break a big rock and you get smaller rocks, and every piece is still a rock. A whole product idea is a story. So is a release slice, and so is one card in it. A word such as “epic” only means a story that you already know is too big to build as it stands.</p>
+    <p>The right size depends on who is looking.</p>
+    <dl class="terms">
+      <div><dt>For a user</dt><dd>A right-sized story fulfils a need.</dd></div>
+      <div><dt>For the business</dt><dd>It is a bundle that achieves an outcome, which is a release.</dd></div>
+      <div><dt>For the team building it</dt><dd>It takes a few days to build and test.</dd></div>
+    </dl>
+    <p>Break stories down as they come close to being built, and no earlier. The team will learn things on the way that change the cards, and splitting everything in advance wastes that effort.</p>
+  </section>
+
+  <section class="reading">
+    <h2>The last, best conversation</h2>
+    <p>When a card reaches the top of the build order, the people who will build it hold a short workshop. They need someone who knows the user and the purpose, a developer and a tester. This group is often called the three amigos. Keep it that small. In a room with the whole team, most people watch while a few talk.</p>
+    <p>This is the conversation from lesson 1, held for a single card. The group leaves with the <dfn>confirmation</dfn>: specific examples that everyone accepts as proof that the story is done. The examples are also the easiest way to split a story that is still too big, because each example can become a thinner story of its own.</p>
+    <p>Here is that workshop for one card from the opening game of release 2: <strong>Check in at the door by giving my name</strong>. Open each question to see what the conversation adds.</p>
+    <div class="reveal pairs">
+      <details>
+        <summary><span>Who is this for?</span></summary>
+        <p>Two people. One is the visitor. The other is the volunteer at the door, who has to find a name on the list while a queue builds.</p>
+        <p class="on-card">Written on the card: the list is sorted by surname.</p>
+      </details>
+      <details>
+        <summary><span>Why do they need it?</span></summary>
+        <p>So that a booked visitor is recognised without showing a phone. Sam’s battery may be flat. That rules out anything that depends on the visitor’s own device.</p>
+        <p class="on-card">Written on the card: a visitor with no phone can check in with a name alone.</p>
+      </details>
+      <details>
+        <summary><span>What goes wrong?</span></summary>
+        <p>The tester asks what happens when two visitors called Sam arrive at ten o’clock. Nobody had thought of it. The group agrees that the list will show the item and the slot time beside each name.</p>
+        <p class="on-card">Written on the card: given two bookings in the same name, the volunteer can tell them apart by item and time.</p>
+      </details>
+      <details>
+        <summary><span>Is there a simpler way?</span></summary>
+        <p>The developer points out that a printed list does all of this. A tablet at the door can wait for a later release.</p>
+        <p class="on-card">Written on the card: the door list prints on one page for each bench.</p>
+      </details>
+    </div>
+    <p>Four questions produced four checkable examples and a cheaper solution. Patton’s checklist for these conversations is longer, but it starts in the same place: who, what and why, then what happens outside the software, what goes wrong and whether there is a better way.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Look at everything you build</h2>
+    <p>When a story is built, the people who discussed it look at it together. Does it match what they agreed? Now that they can see it, would they change it? Changing it at this point is the iterative work from lesson 8, and you should expect to do some.</p>
+    <p>Use the map to keep track. Mark each card as it is finished, so that the team sees progress across the whole journey. As the date approaches, Patton suggests grading each activity on the backbone as if you had to ship today. A report card of A, B, D and B shows exactly where the remaining weeks should go.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Then measure the outcome</h2>
+    <p>Shipping finishes the output. The outcome from lesson 2 is still an open question, and Patton warns that outcomes are never guaranteed. After the release, go and look. Count what you said you would count, and watch people use what you built. For the café, that means the door tally. Did the share of visitors seen by a repairer rise from three in four to nine in ten?</p>
+    <p>Whatever you find goes back on the map as new cards, and the next slice starts from there. Patton argues that the improvements you make after release are the most valuable ones, because you make them with real use in front of you. Keep the map on the wall. You will use it again.</p>
+  </section>
+</Lesson>

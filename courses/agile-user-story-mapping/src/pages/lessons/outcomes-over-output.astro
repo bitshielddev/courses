@@ -1,0 +1,55 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import CardSort from '../../components/CardSort.astro';
+
+const columns = [
+  { id: 'output', name: 'Output', hint: 'What the team built' },
+  { id: 'outcome', name: 'Outcome', hint: 'What people do differently' },
+  { id: 'impact', name: 'Impact', hint: 'What the café gains over time' },
+];
+const items = [
+  { text: 'The booking form is live on the library website.', column: 'output', clue: 'This is something the team delivered. Nobody’s Saturday has changed yet.' },
+  { text: 'Visitors check who is repairing before they leave home.', column: 'outcome', clue: 'This is a change in what visitors do.' },
+  { text: 'The café repairs more items each year and keeps its council grant.', column: 'impact', clue: 'This is a longer-term result for the organisation. It follows from many good visits.' },
+  { text: 'Reminder emails go out two days before each session.', column: 'output', clue: 'This is a feature working as built. Whether visitors act on the reminder is a separate question.' },
+  { text: 'Nine in ten visitors are seen by a repairer, up from three in four.', column: 'outcome', clue: 'This is a change you can observe at the door after the release.' },
+  { text: 'Volunteers keep coming back, because fewer of their mornings are wasted.', column: 'impact', clue: 'This is a benefit to the café that builds up slowly, as a consequence of better sessions.' },
+];
+---
+<Lesson slug="outcomes-over-output">
+  <section class="reading">
+    <h2>Three words for what you are doing</h2>
+    <p>Patton separates three things that teams tend to blur together.</p>
+    <dl class="terms">
+      <div><dt>Output</dt><dd>What you build and deliver: features, pages, releases.</dd></div>
+      <div><dt>Outcome</dt><dd>What people do differently once the output exists. You can only observe it after you deliver.</dd></div>
+      <div><dt>Impact</dt><dd>The longer-term benefit to the organisation that follows from good outcomes.</dd></div>
+    </dl>
+    <p>Teams mostly measure output, because output is the part they control: how many features, and how fast. Nobody wanted the features for their own sake, though. Noor wants fewer wasted trips, and a calendar is one guess at how to get them.</p>
+    <p>For the café, the calendar would be output. The outcome would be that visitors come on a day when someone can repair their item, so more of them are seen. The impact would be a café that repairs more things with the same volunteers, which is what its funders pay for.</p>
+  </section>
+
+  <section class="reading">
+    <h2>There is always too much to build</h2>
+    <p>Every team has more ideas than time. The tempting answer is to build faster. Patton’s answer is to build less: choose the output most likely to produce the outcome, and leave the rest. He describes the job as minimising output while maximising outcome and impact.</p>
+    <p>This changes how you set priorities. When you rank features against each other, every feature has a defender and the argument never ends. When you first choose a specific outcome for specific people, most features turn out not to be needed yet.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Frame the café’s idea</h2>
+    <p>Framing means answering a few questions before anyone designs anything. The café team writes its answers on one sheet.</p>
+    <dl class="terms frame">
+      <div><dt>Who is it for?</dt><dd>Visitors who bring an item to be repaired. The team starts with electrical items, because Ade is the only electrical repairer and those visitors make the most wasted trips.</dd></div>
+      <div><dt>What happens today?</dt><dd>They turn up, queue and find out at the front whether anyone can help. The door tally shows that about one visitor in four leaves without being seen.</dd></div>
+      <div><dt>What should change?</dt><dd>They know before they leave home whether to come, and they arrive when the right repairer is free.</dd></div>
+      <div><dt>How will we know?</dt><dd>The share of visitors who are seen by a repairer rises from three in four to nine in ten.</dd></div>
+      <div><dt>Why does the café care?</dt><dd>It gets more repairs out of the same volunteers and the same room.</dd></div>
+    </dl>
+    <p>None of the answers mentions a calendar. The team now has something to test every idea against, including Noor’s.</p>
+  </section>
+
+  <CardSort name="sort-outcomes" title="Output, outcome or impact?" columns={columns} items={items} pileLabel="Statements to sort" choiceLabel="Sort this statement"
+    done="All six are placed. The outputs are things the team finished. The outcomes are things visitors do. The impacts are what the café gains as a result.">
+    <p>Six months from now, people are describing the café’s booking project. Put each statement under the word that fits it.</p>
+  </CardSort>
+</Lesson>

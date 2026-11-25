@@ -1,0 +1,98 @@
+---
+import CourseLayout from '../layouts/CourseLayout.astro';
+import StoryMap from '../components/StoryMap.astro';
+import { lessons, steps, lessonHref } from '../data/lessons';
+
+const lessonsFor = (step: string) => lessons.map((lesson, index) => ({ ...lesson, number: index + 1 })).filter((lesson) => lesson.step === step);
+const glossary = [
+  ['User story', 'A short description of something a person wants to do. It is written on a card as a reminder to have a conversation.'],
+  ['Card, conversation, confirmation', 'The three parts of a story: a few words to name it, the discussion that builds shared understanding, and the agreed examples that show it is done.'],
+  ['Output', 'What the team builds and delivers.'],
+  ['Outcome', 'What people do differently because of the output. It can only be observed after release.'],
+  ['Impact', 'The longer-term benefit to the organisation that follows from good outcomes.'],
+  ['Flat backlog', 'A single ranked list of stories. It shows what is next and hides how the stories fit together.'],
+  ['Story map', 'The backlog laid out in two directions: the user’s story from left to right, and detail from top to bottom.'],
+  ['Task', 'A short verb phrase for something a user does to reach a goal, such as “Choose a time”.'],
+  ['Narrative flow', 'The left-to-right order of the map, which is the order in which you would tell the story.'],
+  ['Activity', 'A group of tasks done towards one common goal, named with a verb phrase.'],
+  ['Backbone', 'The row of activities across the top of the map. Read alone, it tells the whole story.'],
+  ['Body', 'Everything beneath the tasks: details, alternatives, variations and exceptions.'],
+  ['Now map and later map', 'A now map shows how people work today, with its pains and joys. A later map shows how they will work with the product.'],
+  ['Slice', 'A horizontal cut across the map. Everything above the line is in, and it must form a complete journey.'],
+  ['Minimum viable product (release)', 'The smallest release that achieves its desired outcome for the people it is aimed at.'],
+  ['Minimum viable product (test)', 'The smallest thing you can make or do to prove or disprove an assumption.'],
+  ['Iterative and incremental', 'Iterating is evaluating and changing what you have made. Incrementing is adding to it. A build plan needs both.'],
+  ['Opening game, midgame, endgame', 'A build order for a release: working end to end first, then filled in, then refined.'],
+];
+---
+<CourseLayout title="Cheat sheet · User Story Mapping" description="User story mapping on one page: Jeff Patton’s six steps, the parts of a story map and a glossary of the terms." section="cheat">
+  <main class="shell sheet" id="main">
+    <a href="/" class="back-link print-hide">← Course overview</a>
+    <header class="workshop-head">
+      <p class="kicker short-rule">User story mapping</p>
+      <h1>Cheat <em>sheet.</em></h1>
+      <p class="lede">The whole method on one page. Keep it beside you the first few times you build a map.</p>
+      <button class="secondary print-hide" data-print hidden>Print this page <span aria-hidden="true">↗</span></button>
+    </header>
+
+    <section class="sheet-section" aria-labelledby="sheet-ideas">
+      <h2 id="sheet-ideas">Two ideas underneath everything</h2>
+      <ul class="sheet-ideas">
+        <li><strong>Stories are for shared understanding.</strong> A document that everyone has read is not the same as a picture that everyone shares. Tell the story together, with cards to point at.</li>
+        <li><strong>Minimise output, maximise outcome.</strong> There is always too much to build. Decide who the work is for and what should change for them, then build the least that gets that change.</li>
+      </ul>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="sheet-steps">
+      <h2 id="sheet-steps">The six steps</h2>
+      <ol class="sheet-steps">
+        {steps.map((step) => (
+          <li>
+            <h3>{step.long}</h3>
+            <p>{step.gist}</p>
+            <p class="sheet-links print-hide">{lessonsFor(step.id).map((lesson) => <a href={lessonHref(lesson.slug)}>Lesson {lesson.number}: {lesson.title}</a>)}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="sheet-anatomy">
+      <h2 id="sheet-anatomy">The parts of a map</h2>
+      <StoryMap show="releases" controls />
+      <ul class="legend">
+        <li><span class="swatch backbone-swatch" aria-hidden="true"></span><span><strong>Backbone.</strong> The top row of activities. It tells the whole story in a few cards.</span></li>
+        <li><span class="swatch task-swatch" aria-hidden="true"></span><span><strong>Tasks.</strong> What the user does, from left to right in narrative flow.</span></li>
+        <li><span class="swatch body-swatch" aria-hidden="true"></span><span><strong>Body.</strong> Details, alternatives, variations and exceptions beneath each task.</span></li>
+        <li><span class="swatch cut-swatch" aria-hidden="true"></span><span><strong>Slices.</strong> Lines across the map. Each slice is a complete journey, named for an outcome.</span></li>
+      </ul>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="sheet-questions">
+      <h2 id="sheet-questions">Questions to ask at the map</h2>
+      <ul class="sheet-questions">
+        <li><strong>To frame:</strong> Who is it for? What do they do today? What should change? How will we know?</li>
+        <li><strong>To map:</strong> What do they do first? And then? What do we call this group of steps?</li>
+        <li><strong>To explore:</strong> What about another kind of user? Another way of doing it? When it goes wrong?</li>
+        <li><strong>To slice a release:</strong> Does this person need this card to get that outcome?</li>
+        <li><strong>To learn:</strong> What must be true for this to work? Which assumption is least certain and most damaging? What is the cheapest test?</li>
+        <li><strong>To build:</strong> What is the thinnest version that works from end to end? What is risky and should come first?</li>
+      </ul>
+    </section>
+
+    <section class="sheet-section" aria-labelledby="sheet-glossary">
+      <h2 id="sheet-glossary">Glossary</h2>
+      <dl class="glossary">
+        {glossary.map(([term, meaning]) => <div><dt>{term}</dt><dd>{meaning}</dd></div>)}
+      </dl>
+    </section>
+
+    <p class="print-hide sheet-next"><a class="text-link" href="/workshop/">Run the team workshop →</a></p>
+  </main>
+</CourseLayout>
+<script>
+  const print = document.querySelector<HTMLButtonElement>('[data-print]');
+  if (print) {
+    print.hidden = false;
+    print.addEventListener('click', () => window.print());
+  }
+</script>

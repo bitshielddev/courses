@@ -1,6 +1,6 @@
 # C / Field Manual courses
 
-Interactive programming courses that share one lesson engine. Each course is a static site on its own Cloudflare Worker and subdomain. Every course opens straight from disk (`file://`) as well.
+Interactive field manuals for programming and product teams. Each course is a static site on its own Cloudflare Worker and subdomain. The programming courses share a lesson engine and also open straight from disk (`file://`). The Agile short course uses Astro and has its own local development commands.
 
 Browse the [course catalog](https://courses.bitshield.dev/) for live courses and courses in development. The [catalog project](catalog/README.md) is a separate Astro site.
 
@@ -10,8 +10,9 @@ Browse the [course catalog](https://courses.bitshield.dev/) for live courses and
 | [Anatomy of a Neovim save](courses/c-inotify/README.md): systems project 01. Build an inotify monitor in C on NixOS and use it to find out what `:w` does. | lab | https://c-inotify.courses.bitshield.dev | [index.html](courses/c-inotify/index.html) |
 | [Rust / Field Manual](courses/rust-intro/README.md): Rust for programmers who know Python, PHP or TypeScript. 24 lessons on ownership, borrowing and the rest of the language, with questions and graded challenges. | compiler (Rust) | https://rust-intro.courses.bitshield.dev | [index.html](courses/rust-intro/index.html) |
 | [Lean / Field Manual](courses/lean-intro/README.md): proving programs correct in Lean 4, for programmers who know Python. 16 lessons, each with a lab that Lean itself checks. | lab | https://lean-intro.courses.bitshield.dev | [index.html](courses/lean-intro/index.html) |
+| [User Story Mapping](courses/agile-user-story-mapping/README.md) takes a team from a one-line request to a story map, a first release and a build plan in nine lessons, with a cheat sheet and a team workshop. | Astro short course | https://agile-user-mapping-stories.courses.bitshield.dev | [Local setup](courses/agile-user-story-mapping/README.md#local-development) |
 
-A course is in one of two **modes**, set by `data-mode` on its page's `<body>`:
+A course using the shared lesson engine is in one of two **modes**, set by `data-mode` on its page's `<body>`:
 
 - **compiler**: C compiles and runs in the browser with a bundled WebAssembly Clang. Lessons have runnable cells, predict-the-output questions and challenges graded by tests. A compiler course with `data-language="rust"` on `<body>` teaches Rust instead: its code runs through the Rust Playground, and the checks use the `rustc` on this machine.
 - **lab**: the practical work happens on the learner's own machine. The **Linux lab** tab gives instructions, checks to tick and a notebook saved in the browser. The compiler isn't loaded. A lab course in another language renames the tab and chooses its highlighting with attributes on `<body>`, as `lean-intro` does.

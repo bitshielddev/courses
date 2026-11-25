@@ -1,0 +1,95 @@
+---
+// Lesson 3: Noor's ranked backlog, and the same twelve cards laid out as a map.
+import { activities, backlog } from '../data/map';
+
+const ranked = backlog.map((item, index) => ({ ...item, rank: index + 1 }));
+const offMap = ranked.filter((item) => item.activity === null);
+---
+<section class="backlog-map" data-view="list" aria-labelledby="backlog-map-title">
+  <h2 id="backlog-map-title">Rearrange Noor’s backlog</h2>
+  <p class="bm-intro">Here is the list as Noor ranked it. Before you switch views, read it and ask yourself which part of a visit has nothing on the list.</p>
+  <div class="bm-controls" role="group" aria-label="Choose how to lay out the backlog" hidden>
+    <button type="button" data-view-choice="list" aria-pressed="true">Ranked list</button>
+    <button type="button" data-view-choice="map" aria-pressed="false">Story map</button>
+  </div>
+
+  <div class="bm-panel" data-panel="list">
+    <h3>Ranked list</h3>
+    <ol class="bm-list">
+      {ranked.map((item) => <li><span class="rank">{item.rank}</span><span>{item.title}</span></li>)}
+    </ol>
+  </div>
+
+  <div class="bm-panel" data-panel="map">
+    <h3>The same twelve cards as a map</h3>
+    <div class="bm-board">
+      {activities.map((activity) => {
+        const here = ranked.filter((item) => item.activity === activity.id);
+        return (
+          <div class="bm-column" data-empty={here.length ? undefined : ''}>
+            <h4>{activity.name}</h4>
+            <ul>
+              {here.map((item) => <li><span class="rank">{item.rank}</span><span>{item.title}</span></li>)}
+            </ul>
+            {!here.length && <p class="bm-hole">Nothing on the list. How does the door volunteer know who has booked?</p>}
+          </div>
+        );
+      })}
+    </div>
+    <div class="bm-off">
+      <h4>Not part of the visitor’s journey</h4>
+      <ul>
+        {offMap.map((item) => <li><span class="rank">{item.rank}</span><span>{item.title} <small>{item.note}</small></span></li>)}
+      </ul>
+    </div>
+    <p class="bm-caption">The numbers are Noor’s rankings. The columns are the stages of a visit, from left to right.</p>
+  </div>
+</section>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('.backlog-map')) {
+    const controls = root.querySelector<HTMLElement>('.bm-controls')!;
+    const buttons = controls.querySelectorAll<HTMLButtonElement>('button');
+    controls.hidden = false;
+    root.dataset.ready = '';
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        root.dataset.view = button.dataset.viewChoice;
+        for (const other of buttons) other.setAttribute('aria-pressed', String(other === button));
+      });
+    }
+  }
+</script>
+
+<style>
+  .backlog-map { container-type: inline-size; margin: 2.2rem 0; padding: clamp(16px, 2.4vw, 28px); border: 1px solid #c8c6b7; background: #f3f0e4; }
+  .backlog-map h2 { margin: 0 0 .35em; font: 400 clamp(28px, 2.8vw, 38px)/1.07 var(--serif); letter-spacing: -.02em; }
+  .bm-intro { font-size: 16px; line-height: 1.55; color: #354c42; max-width: 66ch; }
+  .bm-controls { display: flex; gap: 4px; margin-top: 1rem; }
+  .bm-controls button { min-height: 40px; padding: 8px 16px; border: 1px solid #a1afa0; border-radius: 20px; background: transparent; color: var(--soft); font: 500 14px/1.2 'DM Sans', sans-serif; }
+  .bm-controls button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: #fffdf4; font-weight: 650; }
+  .bm-panel { margin-top: 1rem; }
+  .bm-panel h3 { font: 650 .86rem/1.3 'DM Sans', sans-serif; margin-bottom: .55rem; }
+  [data-ready] .bm-panel h3 { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  [data-ready][data-view='list'] [data-panel='map'], [data-ready][data-view='map'] [data-panel='list'] { display: none; }
+  .backlog-map ol, .backlog-map ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; }
+  .bm-list { max-width: 26rem; }
+  .backlog-map li { display: flex; gap: .55rem; align-items: baseline; padding: .5rem .6rem; border: 1px solid #c9b785; border-radius: .12rem; background: #f5e4ac; font-size: .9rem; line-height: 1.35; box-shadow: 1px 2px 2px #524d3420; }
+  .rank { flex: none; min-width: 1.45em; color: var(--rust); font: 600 11px/1.6 var(--mono); }
+  .bm-board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: #b3bba7; border: 1px solid #b3bba7; }
+  .bm-column { min-width: 0; padding: .7rem; background: #eaf0e3; }
+  .bm-column h4, .bm-off h4 { margin: 0 0 .55rem; font: 700 .86rem/1.3 'DM Sans', sans-serif; }
+  .bm-column[data-empty] { background: #f6e3d6; outline: 2px dashed #a15e3d; outline-offset: -5px; }
+  .bm-hole { margin: 0; font-size: .86rem; line-height: 1.45; color: #6d3a26; }
+  .bm-off { margin-top: .65rem; padding: .7rem; border: 1px dashed #a7a48f; }
+  .bm-off ul { grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+  .bm-off li { background: #ebe7da; border-color: #c8c6b7; box-shadow: none; }
+  .bm-off small { display: block; color: var(--soft); font-size: .8rem; }
+  .bm-caption { margin-top: .7rem; color: var(--soft); font-size: .84rem; line-height: 1.45; }
+  @container (max-width: 40rem) {
+    .bm-board { grid-template-columns: 1fr 1fr; }
+  }
+  @container (max-width: 25rem) {
+    .bm-board { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,28 @@
+---
+import { steps, type StepId } from '../data/lessons';
+
+interface Props {
+  current?: StepId | null;
+  // Before the six steps begin (lesson 1) or after they end (lesson 9).
+  position?: 'before' | 'after';
+}
+const { current = null, position } = Astro.props;
+const at = steps.findIndex((step) => step.id === current);
+const note = position === 'before' ? 'This lesson comes before the six steps.' : position === 'after' ? 'All six steps are done. This lesson is about what follows.' : undefined;
+---
+<nav class="step-strip" aria-label="The six steps of story mapping">
+  <p class="micro">Patton’s six steps</p>
+  <ol>
+    {steps.map((step, index) => (
+      <li
+        class:list={{ 'is-done': position === 'after' || (at >= 0 && index < at), 'is-current': index === at }}
+        aria-current={index === at ? 'step' : undefined}
+        title={step.long + '. ' + step.gist}
+      >
+        <span class="step-n" aria-hidden="true">{index + 1}</span>
+        <span>{step.name}</span>
+      </li>
+    ))}
+  </ol>
+  {note && <p class="step-note">{note}</p>}
+</nav>

@@ -1,0 +1,45 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import Decision from '../../components/Decision.astro';
+
+const assumptions = [
+  { label: 'Visitors with electrical items will book ahead instead of just turning up.', best: true, feedback: 'The whole idea depends on visitors changing a habit, and nobody has seen them do it. If they keep turning up unannounced, nothing else in the slice matters.' },
+  { label: 'Visitors can tell whether their item counts as “small electrical”.', feedback: 'This is worth testing, and it is cheap: show the poster wording to three people holding real items. If it fails, the team rewords a poster. If nobody books, the whole idea fails.' },
+  { label: 'A volunteer will be free to answer the booking phone.', feedback: 'This is a real risk, but it is one the café controls. Noor can put a named volunteer on the phone for the week.' },
+  { label: 'The door volunteer can keep a paper list accurate on a busy morning.', feedback: 'The café already runs a sign-in sheet on most Saturdays, so there is some evidence. One rehearsal would settle the rest.' },
+];
+---
+<Lesson slug="slice-to-learn">
+  <section class="reading">
+    <h2>Your slice is a hypothesis</h2>
+    <p>The slice from lesson 6 rests on guesses. The team is guessing that the problem is what it thinks it is, that this solution fits the problem and that people will use it. Patton is blunt about the odds. One section of his book is titled “We’re Wrong Most of the Time”.</p>
+    <p>So the question changes. Lesson 6 asked what the least is that the team could release. This step asks what the least is that the team could do to find out whether it is right.</p>
+    <p>That gives <dfn>minimum viable product</dfn> a second meaning, which Patton takes from Eric Ries and the Lean Startup: “the smallest thing you could create or do to prove or disprove an assumption”. It may not be a product at all. People argue about which meaning is correct. It is more useful to say which one you mean. In this course, lesson 6 described a <em>release</em> and this lesson describes a <em>test</em>.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Find the risky assumptions</h2>
+    <p>List what has to be true for the slice to work. Then ask two questions about each item. How sure are we? How bad is it if we are wrong? The assumption to test first is the one that is both uncertain and fatal.</p>
+  </section>
+
+  <Decision name="assumptions" title="Which assumption would you test first?" options={assumptions}>
+    <p>These four things all have to be true for the café’s first release to work. Choose the one you would test first, then open the others to compare.</p>
+  </Decision>
+
+  <section class="reading">
+    <h2>Design a small test</h2>
+    <p>A test is something you make or do, put in front of real users and measure. The loop comes from the Lean Startup: build, measure, learn. Keep each turn of it small, because you should expect to go round several times.</p>
+    <p>The book’s example is Eric, a product owner with a new product idea. Eric first talked to users to confirm that the problem was real. Then he showed them prototypes. Only after that did his team build software, and the first version was deliberately too thin to sell. It went to a handful of customers who had agreed to try it, and the team measured what they did with it.</p>
+    <p>Two habits from that story are worth copying.</p>
+    <ul>
+      <li><strong>Trust what people do over what they say.</strong> People are polite. They tell you they like an idea and then never use it. Count behaviour.</li>
+      <li><strong>Decide in advance what result would change your mind.</strong> Without a threshold, every result looks like encouragement.</li>
+    </ul>
+    <p>Use sketches and prototypes before code wherever they can answer the question. Working software is the most expensive way to learn something.</p>
+  </section>
+
+  <section class="reading">
+    <h2>Put the answer on the map</h2>
+    <p>Whatever the test shows, the map changes. If visitors book, release 1 goes ahead as sliced. If they do not, the team goes back to the body of the map and looks for another way to prevent a wasted trip. The poster could simply name the repairer on duty, with no booking at all. A learning strategy is a plan for a series of these tests, each one a thin slice of the map.</p>
+  </section>
+</Lesson>

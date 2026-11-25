@@ -1,0 +1,33 @@
+---
+import Lesson from '../../components/Lesson.astro';
+import BacklogToMap from '../../components/BacklogToMap.astro';
+---
+<Lesson slug="from-backlog-to-map">
+  <section class="reading">
+    <h2>The flat backlog</h2>
+    <p>Most teams keep their stories in a <dfn>backlog</dfn>: a single list, ranked from most to least important, that the team builds from the top. Noor has already written one for the café. It has twelve items and starts with the calendar.</p>
+    <p>A ranked list is good for deciding what to do next. It is poor at showing how the items fit together. Each line is a fragment, and the journey that connects the fragments exists only in the head of the person who wrote them. Patton calls this the flat backlog.</p>
+    <p>He tells the story of Gary, who was building a product for musicians from a prioritised list, one piece at a time. Gary was running out of money, and he could not tell how far the finished pieces were from a product that someone could use.</p>
+  </section>
+
+  <section class="reading">
+    <h2>What a story map is</h2>
+    <p>A <dfn>story map</dfn> arranges the same cards in two directions.</p>
+    <dl class="terms">
+      <div><dt>Left to right</dt><dd>The order in which you would tell the story of someone using the product. Patton calls this the <dfn>narrative flow</dfn>.</dd></div>
+      <div><dt>Top to bottom</dt><dd>From the big steps of that story down to the details and options within each step.</dd></div>
+    </dl>
+    <p>The top row is called the <dfn>backbone</dfn>. It tells the whole story in a few cards, and every card beneath a backbone card belongs to that part of the journey. Lesson 4 builds the backbone, and lesson 5 fills in the cards beneath it.</p>
+    <p>A map does not replace the backlog. It is the same backlog, laid out so that you can see all of it at once.</p>
+  </section>
+
+  <BacklogToMap />
+
+  <section class="reading">
+    <h2>What the map shows</h2>
+    <p>Two things appear on the map that the list was hiding.</p>
+    <p><strong>A hole.</strong> Nothing on the list covers the moment when a visitor arrives. How does the volunteer at the door know who has booked? Noor was not careless. A list has no place where a missing step would show, and a map does. In Patton’s words, mapping your story helps you find holes in your thinking.</p>
+    <p><strong>Other people.</strong> Two items fit nowhere in the visitor’s journey. The rota editor belongs to Noor’s own story, and the donate button belongs to nobody’s visit. The list ranked them among the visitor features as though they were all the same kind of thing.</p>
+    <p>The map also shows where the attention went. Five of the twelve items are about booking. Patton’s advice is to focus on the breadth of the story before diving into the depth: get a thin version of every step on the wall, then decide where more detail is worth having.</p>
+  </section>
+</Lesson>

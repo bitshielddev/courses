@@ -1,0 +1,63 @@
+---
+import '../styles/course.css';
+import licence from '../assets/fonts/OFL.txt?url';
+
+interface Props {
+  title: string;
+  description: string;
+  section?: 'lessons' | 'workshop' | 'cheat';
+  missing?: boolean;
+}
+const { title, description, section, missing = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f5ec" />
+    <title>{title} · Bitshield Courses</title>
+    <meta name="description" content={description} />
+    {missing ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bitshield Courses" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/story-mapping.png', Astro.site)} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="User Story Mapping field manual, showing a story map of a repair café visit with a first release marked across it." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/terminal.svg" type="image/svg+xml" />
+  </head>
+  <body id="top">
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="mast">
+      <div class="shell mast-inner">
+        <a class="brand" href="/" aria-label="User Story Mapping course home">
+          <img width="29" height="29" src="/terminal.svg" alt="" />
+          <span>Bitshield</span><span class="slash" aria-hidden="true">/</span><span class="brand-sub">Field Manuals</span>
+        </a>
+        <nav class="site-nav" aria-label="Course navigation">
+          <a href="/#lessons" aria-current={section === 'lessons' ? 'location' : undefined}>Lessons</a>
+          <a href="/cheat-sheet/" aria-current={section === 'cheat' ? 'page' : undefined}>Cheat sheet</a>
+          <a href="/workshop/" aria-current={section === 'workshop' ? 'page' : undefined}>Workshop</a>
+          <a class="catalog-link" href="https://courses.bitshield.dev/">All courses <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer class="footer shell">
+      <div>
+        <span class="micro">Source book</span>
+        <p><a href="https://www.oreilly.com/library/view/user-story-mapping/9781491904893/"><cite>User Story Mapping</cite></a><span class="credit"> by Jeff Patton with Peter Economy · O’Reilly, 2014</span></p>
+      </div>
+      <div class="footer-links"><a href="https://courses.bitshield.dev/">All courses</a><a href={licence}>Font licences</a><a href="#top">Back to top ↑</a></div>
+    </footer>
+    <script>
+      import '../scripts/progress';
+    </script>
+  </body>
+</html>

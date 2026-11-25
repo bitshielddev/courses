@@ -1,0 +1,247 @@
+---
+// Lesson 6: move cards above the release line until a visitor can get from one end of the map to the other.
+import { activities, cards, releases, tasksOf } from '../data/map';
+
+const order = (id: string) => cards.findIndex((card) => card.id === id);
+const lanes = activities.map((activity) => ({
+  ...activity,
+  cards: tasksOf(activity.id).flatMap((task) => cards.filter((card) => card.task === task.id).map((card) => ({ ...card, taskName: task.name }))),
+}));
+const first = releases[0];
+---
+<section class="slice-lab" aria-labelledby="slice-title">
+  <h2 id="slice-title">Cut the first release</h2>
+  <p class="brief"><strong>Outcome:</strong> {first.outcome} Ade is at the electrical bench this Saturday and can see six visitors.</p>
+  <p class="instructions only-interactive">Tick a card to move it above the line. Aim for the thinnest slice that still gets a visitor through every task, then check it.</p>
+  <noscript><p>On paper, pick one card for each task that a visitor needs, then open the worked example to compare.</p></noscript>
+
+  <div class="board">
+    {lanes.map((lane, index) => (
+      <div class="lane" role="group" aria-labelledby={`slice-column-${index}`}>
+        <h3 class="lane-heading" id={`slice-column-${index}`}>{lane.name}</h3>
+        <div class="pile pilot only-interactive">
+          <p class="pile-name">Above the line</p>
+          <div class="cards" data-pilot></div>
+          <p class="empty-lane">No cards yet</p>
+        </div>
+        <div class="pile reserve">
+          <p class="pile-name only-interactive">Below the line</p>
+          <div class="cards" data-reserve>
+            {lane.cards.map((card) => (
+              <label class="map-card" data-order={order(card.id)}>
+                <input type="checkbox" value={card.id} autocomplete="off" data-task={card.task} data-role={card.role} data-release={card.release} data-later={card.later} />
+                <span><em>{card.taskName}</em><strong>{card.title}</strong><small>{card.detail}</small></span>
+              </label>
+            ))}
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+  <div class="workshop-actions only-interactive">
+    <button type="button" data-check>Check my slice <span aria-hidden="true">→</span></button>
+    <span data-count>0 cards above the line</span>
+  </div>
+  <div class="review" role="status" aria-live="polite" aria-atomic="true">
+    <div class="review-note" hidden>
+      <h3 data-verdict></h3>
+      <ul data-reasons></ul>
+    </div>
+  </div>
+  <details class="worked-example">
+    <summary>See a worked example</summary>
+    <p>Sam reads the poster by the library desk. It gives Saturday’s date and says that Ade is repairing small electrical items. Sam rings the number, agrees ten o’clock, and the volunteer writes the name, the lamp and the time on the door list.</p>
+    <p>On Saturday Sam gives a name at the door and is ticked off. When Ade’s bench is free, the door volunteer calls Sam over. Afterwards the volunteer notes on the same list that Sam was seen and the lamp was fixed.</p>
+    <p>That is seven cards, one for every task that needs something. “Explain the fault” needs nothing new, because Sam does that in person. The whole release runs on a poster, a phone and a sheet of paper.</p>
+  </details>
+</section>
+
+<script>
+  // Tasks that need a card above the line, and what is missing when they have none.
+  const gapsByTask: Record<string, string> = {
+    date: 'The visitor has no way to learn when the session is. A poster or a page of dates would do it.',
+    item: 'The visitor cannot tell whether a lamp is worth bringing. Say which items this session takes.',
+    time: 'Nobody has a slot yet. A phone call or a form can reserve one.',
+    details: 'The booking never reaches the door. It has to go on the list that the door volunteer holds.',
+    checkin: 'At the door, the volunteer needs a way to recognise a booked visitor.',
+    wait: 'The visitor is in the room and nobody tells them when a bench is free.',
+    home: 'The visit works, but the café would not know that it did. Record who was seen, or nobody can check the outcome.',
+  };
+
+  function assessSlice(picked: HTMLInputElement[]) {
+    if (!picked.length) {
+      return { title: 'Give the visitor a starting point', reasons: ['Choose how a visitor finds out about Saturday’s session, then follow the story all the way to the bench.'] };
+    }
+    const ids = new Set(picked.map((input) => input.value));
+    // A booking code only exists if the form sent one.
+    const ways = picked.filter((input) => input.dataset.role === 'way' && !(input.value === 'code' && !ids.has('form')));
+    const covered = new Set(ways.map((input) => input.dataset.task));
+    const gaps = Object.keys(gapsByTask).filter((task) => !covered.has(task)).map((task) => gapsByTask[task]);
+    if (ids.has('code') && !ids.has('form')) gaps.push('A booking code is sent by the form. A visitor who booked by phone has no code to show.');
+    if (gaps.length) return { title: 'There is a gap in the journey', reasons: gaps };
+
+    const later = picked.filter((input) => input.dataset.release !== '1');
+    if (later.length) {
+      const reasons = later.slice(0, 4).map((input) => {
+        const title = input.closest('label')!.querySelector('strong')!.textContent;
+        return `${title}: ${input.dataset.later}`;
+      });
+      if (later.length > 4) reasons.push(`${later.length - 4} more of your cards could wait as well.`);
+      return { title: picked.length > 7 ? 'The journey works. Try a thinner slice.' : 'The journey works. Try a cheaper one.', reasons };
+    }
+    return {
+      title: 'You have a first release',
+      reasons: [
+        'A visitor reads the poster, sees that lamps are taken, agrees a time by phone and goes on the door list. On Saturday they give their name, are called to the bench, and the result is noted.',
+        'Nothing in this slice needs new software, so the café can run it this Saturday and count what happens.',
+      ],
+      complete: true,
+    };
+  }
+
+  document.querySelectorAll<HTMLElement>('.slice-lab').forEach((lab) => {
+    const inputs = Array.from(lab.querySelectorAll<HTMLInputElement>('input[type=checkbox]'));
+    const count = lab.querySelector<HTMLElement>('[data-count]')!;
+    const note = lab.querySelector<HTMLElement>('.review-note')!;
+    const verdict = lab.querySelector<HTMLElement>('[data-verdict]')!;
+    const reasons = lab.querySelector<HTMLElement>('[data-reasons]')!;
+    const picked = () => inputs.filter((input) => input.checked);
+
+    function positionCard(input: HTMLInputElement) {
+      const card = input.closest<HTMLLabelElement>('label')!;
+      const lane = card.closest<HTMLElement>('.lane')!;
+      const pile = lane.querySelector<HTMLElement>(input.checked ? '[data-pilot]' : '[data-reserve]')!;
+      const next = Array.from(pile.children).find((other) => Number((other as HTMLElement).dataset.order) > Number(card.dataset.order));
+      if (card.parentElement !== pile) pile.insertBefore(card, next ?? null);
+    }
+
+    function updateCount() {
+      const size = picked().length;
+      count.textContent = `${size} ${size === 1 ? 'card' : 'cards'} above the line`;
+    }
+
+    for (const input of inputs) {
+      positionCard(input);
+      input.addEventListener('change', () => {
+        const hadFocus = document.activeElement === input;
+        positionCard(input);
+        if (hadFocus) input.focus();
+        note.hidden = true;
+        updateCount();
+      });
+    }
+    lab.querySelector('[data-check]')!.addEventListener('click', () => {
+      const result = assessSlice(picked());
+      verdict.textContent = result.title;
+      reasons.replaceChildren(...result.reasons.map((reason) => Object.assign(document.createElement('li'), { textContent: reason })));
+      note.dataset.state = result.complete ? 'done' : 'retry';
+      note.hidden = false;
+      if (result.complete) lab.dispatchEvent(new CustomEvent('slice-complete', { bubbles: true }));
+    });
+    updateCount();
+    lab.dataset.ready = '';
+  });
+</script>
+
+<style>
+  .slice-lab {
+    --lab-ink: #213f36;
+    --lab-rule: #b5b8a4;
+    container-type: inline-size;
+    margin: 2.2rem 0;
+    padding: clamp(16px, 2.4vw, 28px);
+    border: 1px solid #c8c6b7;
+    background: #f3f0e4;
+    color: var(--lab-ink);
+  }
+  .slice-lab h2 { margin: 0 0 .4em; font: 400 clamp(28px, 2.8vw, 38px)/1.07 var(--serif); letter-spacing: -.02em; }
+  .brief, .instructions { max-width: 68ch; font-size: 16px; line-height: 1.55; }
+  .brief { margin: 0; }
+  .instructions { margin: .6rem 0 1rem; }
+  .only-interactive, .map-card input { display: none; }
+  .slice-lab[data-ready] .only-interactive { display: block; }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 1.1rem;
+    background: #f8f6ec;
+    border: 1px solid #899988;
+    border-radius: .35rem;
+    overflow: hidden;
+  }
+  .lane {
+    --note: #f4dfa2;
+    --selected: #f2cf72;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 3;
+    min-width: 0;
+  }
+  .lane:nth-child(2) { --note: #f6d2bd; --selected: #edb899; }
+  .lane:nth-child(3) { --note: #d8e4c9; --selected: #c2d6ae; }
+  .lane:nth-child(4) { --note: #d5e0e4; --selected: #b9cdd4; }
+  .lane + .lane { border-left: 1px solid var(--lab-rule); }
+  .lane-heading {
+    margin: 0;
+    padding: .7rem .75rem;
+    border-bottom: 1px solid var(--lab-rule);
+    color: var(--lab-ink);
+    background: #e8ecdf;
+    font: 700 .92rem/1.25 'DM Sans', sans-serif;
+  }
+  .pile { padding: .65rem; min-width: 0; }
+  .pilot { background: #eef1e5; }
+  .slice-lab[data-ready] .reserve { border-top: 2px dashed #7d8e7c; }
+  .pile-name { margin: 0 0 .55rem; font: 700 .74rem/1.3 'DM Sans', sans-serif; }
+  .cards { display: grid; gap: .45rem; }
+  .empty-lane { color: #515e51; margin: 0; font-size: .84rem; }
+  [data-pilot]:not(:empty) + .empty-lane { display: none; }
+  .map-card {
+    display: flex;
+    align-items: flex-start;
+    gap: .45rem;
+    padding: .55rem;
+    border: 1px solid #0002;
+    border-radius: .12rem;
+    background: var(--note);
+    box-shadow: 0 1px 2px #3e392215;
+  }
+  .map-card span { min-width: 0; }
+  .map-card em, .map-card strong, .map-card small { display: block; }
+  .map-card em { font: 500 .66rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .05em; color: #4a5a4c; margin-bottom: .2rem; }
+  .map-card strong { line-height: 1.25; font-weight: 700; font-size: .9rem; }
+  .map-card small { margin-top: .22rem; line-height: 1.38; font-size: .79rem; color: #303d30; }
+  .slice-lab[data-ready] .map-card { cursor: pointer; }
+  .slice-lab[data-ready] .map-card input { display: block; width: 1rem; height: 1rem; flex: none; margin: .08rem 0 0; accent-color: var(--lab-ink); }
+  .map-card:has(:checked) { background: var(--selected); border-color: #516752; }
+  .map-card:has(:focus-visible) { outline: 3px solid #355954; outline-offset: 1px; }
+  @media (hover: hover) {
+    .slice-lab[data-ready] .map-card:hover { border-color: #536752; }
+    .workshop-actions button:hover { background: #355749; }
+  }
+  .slice-lab[data-ready] .workshop-actions { display: flex; align-items: center; gap: .85rem; flex-wrap: wrap; margin-top: 1rem; }
+  .workshop-actions button { padding: .7rem 1.05rem; min-height: 44px; border-radius: .25rem; border: 1px solid var(--lab-ink); background: var(--lab-ink); color: #fffef4; font: inherit; font-weight: 650; cursor: pointer; }
+  .workshop-actions button span { margin-left: .35rem; }
+  .workshop-actions [data-count] { font-size: .88rem; }
+  .review-note { margin-top: 1rem; border-left: .25rem solid #a15e3d; background: #fbf8ee; padding: .9rem 1.1rem; }
+  .review-note[data-state='done'] { border-color: #457254; background: #e6ecd9; }
+  .review-note h3 { margin: 0; font: 700 1rem/1.3 'DM Sans', sans-serif; }
+  .review-note ul { margin: .45rem 0 0; padding-left: 1.1rem; display: grid; gap: .3rem; }
+  .review-note li, .worked-example p { line-height: 1.5; max-width: 74ch; font-size: .95rem; }
+  .worked-example { margin-top: 1.2rem; border-block: 1px solid var(--lab-rule); }
+  .worked-example summary { cursor: pointer; padding: .8rem 0; font-weight: 650; }
+  .worked-example p { margin: .5rem 0 0; }
+  .worked-example p:last-of-type { margin-bottom: 1rem; }
+  .worked-example summary:focus-visible, .workshop-actions button:focus-visible { outline: 3px solid #355954; outline-offset: 2px; }
+  @container (max-width: 46rem) {
+    .board { grid-template-columns: 1fr 1fr; }
+    .lane:nth-child(3) { border-left: 0; }
+    .lane:nth-child(n + 3) { border-top: 1px solid #899988; }
+  }
+  @container (max-width: 30rem) {
+    .board { grid-template-columns: 1fr; }
+    .lane { grid-row: auto; grid-template-rows: auto; }
+    .lane + .lane { border-left: 0; border-top: 1px solid #899988; }
+    .map-card strong { font-size: .98rem; }
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+import CourseLayout from '../layouts/CourseLayout.astro';
+import StepStrip from './StepStrip.astro';
+import { lessons, parts, lessonHref } from '../data/lessons';
+
+interface Props { slug: string; }
+const { slug } = Astro.props;
+const index = lessons.findIndex((entry) => entry.slug === slug);
+const lesson = lessons[index];
+const previous = lessons[index - 1];
+const next = lessons[index + 1];
+const number = (n: number) => String(n + 1).padStart(2, '0');
+---
+<CourseLayout title={lesson.title + ' · User Story Mapping'} description={lesson.summary} section="lessons">
+  <main class="shell reader-grid" id="main">
+    <aside class="rail">
+      <a href="/" class="back-link">← Course overview</a>
+      <nav aria-label="Lessons" class="rail-nav">
+        <h2>User story mapping</h2>
+        {parts.map((part) => (
+          <>
+            <h3 class="rail-part">{part.title}</h3>
+            <ol>
+              {lessons.map((entry, n) => entry.part === part.id && (
+                <li>
+                  <a aria-current={entry.slug === slug ? 'page' : undefined} data-course-lesson={entry.slug} href={lessonHref(entry.slug)}>
+                    <span class="lesson-num">{number(n)}</span><span>{entry.title}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </>
+        ))}
+        <a class="rail-workshop" href="/cheat-sheet/">Cheat sheet <span aria-hidden="true">→</span></a>
+        <a class="rail-workshop" href="/workshop/">Team workshop <span aria-hidden="true">→</span></a>
+      </nav>
+      <p class="progress-text" data-progress hidden></p>
+    </aside>
+    <article class="reader">
+      <header class="reader-title">
+        <p class="kicker short-rule">Lesson {number(index)} of {String(lessons.length).padStart(2, '0')} <span>·</span> {lesson.minutes} min</p>
+        <h1>{lesson.title}</h1>
+        <p class="lede">{lesson.summary}</p>
+      </header>
+      <StepStrip current={lesson.step} position={index === 0 ? 'before' : index === lessons.length - 1 ? 'after' : undefined} />
+      <p class="bridge">{lesson.bridge}</p>
+
+      <slot />
+
+      <section class="key-points" aria-labelledby="key-points-title">
+        <h2 id="key-points-title">Key points</h2>
+        <ul>{lesson.keyPoints.map((point) => <li>{point}</li>)}</ul>
+      </section>
+      <section class="knowledge" aria-labelledby="question-title">
+        <p class="kicker"><span class="note-mark" aria-hidden="true"></span> Check your understanding</p>
+        <h2 id="question-title">{lesson.exercise.prompt}</h2>
+        <form data-quiz={lesson.slug} hidden>
+          <fieldset aria-labelledby="question-title">
+            {lesson.exercise.options.map((option, n) => (
+              <label class="answer">
+                <input type="radio" name="choice" value={n} required data-correct={String(option.correct)} data-feedback={option.feedback} />
+                <span>{option.label}</span>
+              </label>
+            ))}
+          </fieldset>
+          <button class="primary" type="submit">Check answer <span aria-hidden="true">→</span></button>
+          <div class="feedback" aria-live="polite" aria-atomic="true"></div>
+        </form>
+        <noscript>
+          <ul class="static-options">{lesson.exercise.options.map((option) => <li>{option.label}</li>)}</ul>
+          <details><summary>Read the reasoning</summary><p>{lesson.exercise.options.find((option) => option.correct)?.feedback}</p></details>
+        </noscript>
+      </section>
+      <aside class="transfer"><h2>Try it with your team</h2><p>{lesson.takeaway}</p></aside>
+      <details class="book-note"><summary>Where this is in the book</summary><p>{lesson.chapters}</p></details>
+      <nav class="turn-page" aria-label="Continue the course">
+        <a class="back-link" href={previous ? lessonHref(previous.slug) : '/'}>← {previous ? previous.title : 'Overview'}</a>
+        <a class="primary" href={next ? lessonHref(next.slug) : '/cheat-sheet/'}>{next ? 'Next: ' + next.title : 'Open the cheat sheet'} <span aria-hidden="true">→</span></a>
+      </nav>
+    </article>
+  </main>
+</CourseLayout>

@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "agile-user-mapping-stories",
+  "compatibility_date": "2026-11-25",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "agile-user-mapping-stories.courses.bitshield.dev",
+      "custom_domain": true
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+---
+import { activities, tasks, releases, cardsOf, tasksOf } from '../data/map';
+
+type Layer = 'backbone' | 'tasks' | 'body' | 'releases' | 'first';
+interface Props {
+  show?: Layer;
+  // Layer buttons let the reader step through the anatomy of the map.
+  controls?: boolean;
+  caption?: string;
+  // Lesson 5 hides the cards that "what about…?" will uncover.
+  explore?: boolean;
+}
+const { show = 'body', controls = false, caption, explore = false } = Astro.props;
+
+const layers: { id: Layer; label: string; caption: string }[] = [
+  { id: 'backbone', label: 'Backbone', caption: 'The backbone: four activities that tell the whole visit in one breath.' },
+  { id: 'tasks', label: 'Tasks', caption: 'Eight tasks in narrative flow. Read from left to right and say “and then…” between them.' },
+  { id: 'body', label: 'Body', caption: 'The body of the map: details, alternatives and exceptions beneath each task.' },
+  { id: 'releases', label: 'Releases', caption: 'Three slices. Each line cuts across the whole visit and is named for an outcome.' },
+  { id: 'first', label: 'First release', caption: 'Release 1 is a whole visit, run with a poster, a phone and a paper list.' },
+];
+const current = layers.find((layer) => layer.id === show)!;
+---
+<figure class="map-fig" data-map data-show={show}>
+  <div class="map-scroll" tabindex="0" role="group" aria-label="Story map of a visit to the repair café. On a narrow screen it scrolls sideways.">
+    <div class="map-sheet">
+      <span class="tape" aria-hidden="true"></span>
+      <div class="sheet-heading"><strong>Repair café</strong><span>Sam’s visit <span aria-hidden="true">⟶</span></span></div>
+      <ol class="map-row backbone" aria-label="Backbone: the activities">
+        {activities.map((activity) => <li class="paper-note" style={`grid-column: span ${tasksOf(activity.id).length}`}>{activity.name}</li>)}
+      </ol>
+      <ol class="map-row task-row" aria-label="Tasks, in the order of the visit">
+        {tasks.map((task) => <li class="paper-note">{task.name}</li>)}
+      </ol>
+      <div class="map-body">
+        {releases.map((release) => (
+          <div class="band" data-release={release.id}>
+            <p class="cut"><span>Release {release.id} · {release.name}</span></p>
+            <ul class="map-row" aria-label={`Cards in release ${release.id}`}>
+              {tasks.map((task) => (
+                <li class="cell">
+                  {cardsOf(task.id, release.id).map((card) => (
+                    <span class="paper-note" data-wa={explore && card.whatAbout ? card.id : undefined}>{card.title}</span>
+                  ))}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+  <figcaption>
+    {controls && (
+      <div class="map-controls" role="group" aria-label="Show a layer of the story map" hidden>
+        {layers.map((layer) => (
+          <button type="button" data-layer={layer.id} data-caption={layer.caption} aria-pressed={layer.id === show ? 'true' : 'false'}>{layer.label}</button>
+        ))}
+      </div>
+    )}
+    <p class="map-caption" aria-live={controls ? 'polite' : undefined}>{caption ?? current.caption}</p>
+  </figcaption>
+</figure>
+<script>
+  for (const map of document.querySelectorAll<HTMLElement>('[data-map]')) {
+    const controls = map.querySelector<HTMLElement>('.map-controls');
+    if (!controls) continue;
+    controls.hidden = false;
+    const buttons = controls.querySelectorAll<HTMLButtonElement>('button');
+    for (const button of buttons) {
+      button.addEventListener('click', () => {
+        map.dataset.show = button.dataset.layer;
+        for (const other of buttons) other.setAttribute('aria-pressed', String(button === other));
+        map.querySelector('.map-caption')!.textContent = button.dataset.caption!;
+      });
+    }
+  }
+</script>
