@@ -41,6 +41,26 @@ export const availableCourses = [
     cover: 'Lean',
     theme: 'navy',
   },
+  {
+    id: 'agile-better-stories',
+    title: 'Story Atlas',
+    format: 'Agile field guide',
+    ideas: 50,
+    description: 'Explore how to write, discuss and split better user stories, with examples and questions to bring to your team.',
+    url: 'https://agile-better-stories.courses.bitshield.dev/',
+    cover: 'Map',
+    theme: 'parchment',
+  },
+  {
+    id: 'agile-user-story-mapping',
+    title: 'User Story Mapping',
+    format: 'Agile short course',
+    lessons: 9,
+    description: 'The main ideas of Jeff Patton’s book in about 45 minutes. Follow one repair café request from a story map to a first release and a build plan.',
+    url: 'https://agile-user-mapping-stories.courses.bitshield.dev/',
+    cover: 'USM',
+    theme: 'sage',
+  },
 ] as const;
 
 // Courses that are announced but not published. With none listed, the catalog leaves out

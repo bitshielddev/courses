@@ -40,3 +40,6 @@ To roll back, find the previously working version using `npx wrangler deployment
 | --- | --- | --- |
 | 2026-11-22 | `2cb8cd4c-1f90-4b8f-bfc7-320d00be4123` | Initial catalog with two published courses, two upcoming courses, and bundled font licenses. |
 | 2026-11-23 | `cd71bf9b-a7c2-4b63-b8c4-68f6a2cc36fe` | Rust and Lean moved to available courses, each with a new cover. No courses are in development, so that section is hidden. |
+| 2026-11-24 | `0b07f33c-e95b-4509-ac94-b395438824fa` | Added Story Atlas, a field guide with 50 ideas for improving user stories. |
+| 2026-11-25 | `54032d19-38f9-432d-b78e-24bb9973ada4` | Added User Story Mapping to the available courses and verified the link to its public domain. |
+| 2026-11-25 | `fed5257e-7731-47c0-a626-df067b11ab5a` | User Story Mapping card updated for the nine-lesson, 45-minute rewrite. |

@@ -2,7 +2,7 @@
 
 The Astro site at [courses.bitshield.dev](https://courses.bitshield.dev/) lists the available courses and previews the courses in development. Each published course opens on its own subdomain.
 
-Edit [the catalog entries](src/data/courses.ts) to change the listings. Once a course is published, move it from `upcomingCourses` to `availableCourses`, using the live URL from its Wrangler config, and give it a `theme`. A new theme needs a jacket colour in [base.css](src/styles/base.css) and a diagram in [CourseCard.astro](src/components/CourseCard.astro). While `upcomingCourses` is empty, the page leaves out the "In development" section and its header link.
+Every new course, lab and standalone guide published in this repository gets a listing in [the course catalog](src/data/courses.ts). Add it to `availableCourses` using the verified live URL from its Wrangler config, and remove any matching entry from `upcomingCourses`. A new theme needs a jacket colour in [base.css](src/styles/base.css) and a diagram in [CourseCard.astro](src/components/CourseCard.astro). While `upcomingCourses` is empty, the page leaves out the "In development" section and its header link.
 
 From `catalog/`, select the Node.js version pinned in `.node-version`, then install the dependencies and start Astro.
 
@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-For production checks, deployment and rollback, see the [Cloudflare deployment guide](docs/deploy-cloudflare.md).
+After the course is live, deploy the catalog separately and verify the new card links to it on the public catalog. See the [Cloudflare deployment guide](docs/deploy-cloudflare.md).
 
 ## Design
 

@@ -4,6 +4,7 @@ interface Props {
   course: (typeof availableCourses)[number];
 }
 const { course } = Astro.props;
+const isGuide = 'ideas' in course;
 ---
 <article class="course">
   <div class:list={['cover', course.theme]} aria-hidden="true">
@@ -13,12 +14,14 @@ const { course } = Astro.props;
       {course.theme === 'orange' && <div class="events"><i></i><i></i><i></i></div>}
       {course.theme === 'ochre' && <div class="move"><i></i><i></i><i></i></div>}
       {course.theme === 'navy' && <div class="proof"><i></i><i></i><i></i><i></i></div>}
+      {course.theme === 'parchment' && <div class="contours"><i></i><i></i><i></i><i></i></div>}
+      {course.theme === 'sage' && <div class="map-jacket"><i></i><i></i><i></i><i></i><i></i><i></i></div>}
     </div>
   </div>
   <div class="course-info">
-    <p class="course-meta">{course.format}<span class="meta-dot">·</span>{course.lessons} lessons</p>
+    <p class="course-meta">{course.format}<span class="meta-dot">·</span>{isGuide ? `${course.ideas} ideas` : `${course.lessons} lessons`}</p>
     <h3><a href={course.url}>{course.title}</a></h3>
     <p class="course-description">{course.description}</p>
-    <span class="open-course" aria-hidden="true">Open course <span>↗</span></span>
+    <span class="open-course" aria-hidden="true">{isGuide ? 'Open guide' : 'Open course'} <span>↗</span></span>
   </div>
 </article>
