@@ -1,6 +1,7 @@
 ---
 name: create-course
-description: Plan, scaffold, write, verify and deploy a new interactive course in this C / Field Manual repository, where each course is a folder in courses/<id>/ sharing the lesson engine in engine/. Use it whenever the user wants a new course, tutorial, systems project or lab here ("make a course on sockets", "another project like the inotify one", "start a C course about threads"). Also use it to add a part or several lessons to an existing course, or to change how courses are laid out, checked, built or deployed. It covers choosing between the two modes (compiler: C runs in the browser, or Rust through the Rust Playground, with graded challenges; lab: practical work on Linux with a notebook), the lesson data format, the verifier and Cloudflare deployment.
+description: >-
+  Plan, scaffold, write, verify and deploy a new interactive course in this C / Field Manual repository, where each course is a folder under courses/ sharing the lesson engine in engine/. Use it whenever the user wants a new course, tutorial, systems project or lab here ("make a course on sockets", "another project like the inotify one", "start a C course about threads"). Also use it to add a part or several lessons to an existing course, or to change how courses are laid out, checked, built or deployed. It covers choosing between the two modes (compiler: C runs in the browser, or Rust through the Rust Playground, with graded challenges; lab: practical work on Linux with a notebook), the lesson data format, the verifier and Cloudflare deployment.
 ---
 
 # Create a course
@@ -137,6 +138,7 @@ A deploy publishes to the internet. A course's first deploy also creates a DNS r
 2. `npm run deploy:dry-run -- <id>`.
 3. With the user's go-ahead: `npm run deploy -- <id>`. It needs a Wrangler login, which the user does once with `npx wrangler login`. If `npx wrangler whoami` fails, ask them to log in. Don't try to work around it. If a first deploy stops after `Uploaded <id>` with error 10007 ("This Worker does not exist"), run the same command again; `docs/deploy-cloudflare.md` explains why.
 4. `node tools/verify.cjs <id> --url https://<id>.courses.bitshield.dev/` (for a Rust course, also once with `--live`, which uses the real Playground), then record the date, the version ID Wrangler printed and a one-line note in the course README's deployment history.
+5. Add the new course to the parent catalog and publish it as part of the release. Follow [the course catalog instructions](../../../catalog/README.md) and verify the new card on [courses.bitshield.dev](https://courses.bitshield.dev/) links to the live course.
 
 `docs/deploy-cloudflare.md` covers rollback and the details.
 
