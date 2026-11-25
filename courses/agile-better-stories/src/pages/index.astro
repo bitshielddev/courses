@@ -1,0 +1,162 @@
+---
+import '../styles/atlas.css';
+import favicon from '../assets/atlas-mark.svg?url';
+import fontLicence from '../assets/fonts/OFL.txt?url';
+import ideas from '../data/ideas.json';
+import { topics } from '../data/topics.js';
+
+const title = 'Story Atlas · Agile Better Stories';
+const description = 'Explore 50 ideas for better user stories. Browse five topics, draw a random idea and find a question to bring to your team.';
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const socialImage = new URL('/story-atlas.png', Astro.site);
+const book = 'https://leanpub.com/50quickideas';
+
+const groups = topics.map(topic => ({
+  topic,
+  entries: ideas.filter(idea => idea.topic === topic.key),
+}));
+const filters = [
+  { key: 'all', name: 'All ideas', count: ideas.length },
+  ...groups.map(({ topic, entries }) => ({ ...topic, count: entries.length })),
+];
+
+// Alternate topics so the first few cards introduce all five parts of the atlas.
+const browseOrder = [];
+const rows = Math.max(...groups.map(group => group.entries.length));
+for (let row = 0; row < rows; row++) {
+  for (const { topic, entries } of groups) {
+    if (entries[row]) browseOrder.push({ idea: entries[row], topic });
+  }
+}
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f8f6ed" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="Agile Better Stories" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={socialImage.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Story Atlas and its illustrated map of five ways to explore user stories." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href={favicon} type="image/svg+xml" />
+  </head>
+  <body>
+    <a class="skip" href="#index">Skip to idea index</a>
+    <div class="page">
+      <header class="mast">
+        <div class="brand"><span class="brandmark" aria-hidden="true"></span>Agile Better Stories</div>
+        <a class="source-link" href={book}>Source book<span aria-hidden="true">↗</span></a>
+      </header>
+      <main>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="intro">
+            <h1 id="hero-title">Story <em>Atlas</em></h1>
+            <p>A field guide to {ideas.length} ways to improve user stories. Pick a topic on the map or see where a random idea takes you.</p>
+            <button class="draw" id="draw" type="button">
+              <span class="die" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></span>
+              Draw an idea
+            </button>
+          </div>
+          <div class="map" role="group" aria-label="Choose a topic on the map">
+            <canvas class="map-art" aria-hidden="true"></canvas>
+            <div id="pins">
+              {groups.map(({ topic, entries }) => (
+                <button
+                  type="button" class="pin" data-topic={topic.key} data-filter={topic.key}
+                  aria-pressed="false" aria-label={`${topic.name}, ${entries.length} ideas`}
+                  style={`--x: ${topic.x}%; --y: ${topic.y}%`}
+                >
+                  <span class="mark" aria-hidden="true"></span>
+                  <span class="name">{topic.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section class="index" id="index" aria-labelledby="index-title">
+          <div class="index-top">
+            <h2 id="index-title" tabindex="-1">The idea index</h2>
+            <div class="search-wrap">
+              <label class="sr" for="search">Search ideas, examples and prompts</label>
+              <span class="glass" aria-hidden="true"></span>
+              <input type="search" id="search" placeholder="Search the ideas…" autocomplete="off" />
+              <button type="button" class="clear-search" hidden id="clear-search" aria-label="Clear search">×</button>
+            </div>
+          </div>
+          <div class="topics" id="filters" role="group" aria-label="Filter ideas by topic">
+            {filters.map(filter => (
+              <button
+                type="button" class="topic" data-topic={filter.key} data-filter={filter.key}
+                aria-pressed={filter.key === 'all' ? 'true' : 'false'}
+              >
+                {filter.key !== 'all' && <span class="mark" aria-hidden="true"></span>}
+                <span class="name">{filter.name}</span>
+                <span class="count">{filter.count}</span>
+              </button>
+            ))}
+          </div>
+          <p class="result-status" id="result-status" role="status">{ideas.length} ideas</p>
+          <ul class="cards" id="cards">
+            {browseOrder.map(({ idea, topic }) => (
+              <li>
+                <a
+                  class="idea-card" data-topic={topic.key} href={`#idea-${idea.id}`}
+                  aria-label={`${idea.title}, ${topic.name}, idea ${idea.id}`}
+                >
+                  <div class="card-top">
+                    <span class="category"><span class="mark" aria-hidden="true"></span>{topic.name}</span>
+                    <span class="folio">№ {String(idea.id).padStart(2, '0')}</span>
+                  </div>
+                  <h3>{idea.title}</h3>
+                  <div class="card-bottom"><p>{idea.advice}</p><span class="card-arrow" aria-hidden="true">↗</span></div>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div class="empty" hidden id="empty">
+            <p>No ideas match these filters.</p>
+            <button id="reset" type="button">Show all ideas</button>
+          </div>
+        </section>
+      </main>
+      <footer>
+        Based on <a href={book}><cite>Fifty Quick Ideas to Improve Your User Stories</cite></a> by Gojko Adzic and David Evans.
+        <a class="font-licence" href={fontLicence}>Font licences</a>
+      </footer>
+    </div>
+    <dialog id="detail" aria-labelledby="detail-title">
+      <div class="reader-head">
+        <div class="category" id="detail-label"></div>
+        <button class="exit" id="close" type="button">Close <span aria-hidden="true">×</span></button>
+      </div>
+      <article class="reader" id="reader">
+        <h2 tabindex="-1" id="detail-title"></h2>
+        <p class="advice" id="advice"></p>
+        <section class="example"><h3>In practice</h3><p id="example"></p></section>
+        <section class="question"><h3>Ask your team</h3><p id="prompt"></p></section>
+        <section><h3>Connected ideas</h3><div class="related" id="related"></div></section>
+        <div class="reader-tools">
+          <button id="copy" type="button">Copy link to this idea</button>
+          <small role="status" id="copy-status"></small>
+          <textarea id="copy-fallback" aria-label="Select and copy this idea" readonly hidden></textarea>
+        </div>
+      </article>
+    </dialog>
+    <script is:inline type="application/json" id="ideas" set:html={JSON.stringify(ideas).replace(/</g, '\\u003c')} />
+    <script>
+      import '../scripts/atlas.js';
+    </script>
+  </body>
+</html>

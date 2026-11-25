@@ -1,0 +1,652 @@
+[
+  {
+    "id": 1,
+    "topic": "creating",
+    "title": "Let the people involved tell it",
+    "advice": "Use the card to arrange a conversation. Someone who knows the work and someone who builds the product can usually find questions that neither would write down alone.",
+    "example": "A librarian asks for a button to renew loans. When she shows a developer the returns desk, he sees her renew an entire family’s books one at a time. They sketch a way to renew the group.",
+    "prompt": "Who could show us the last time this happened?",
+    "sourceTitle": "Tell stories, don’t write them",
+    "related": [
+      20,
+      23
+    ]
+  },
+  {
+    "id": 2,
+    "topic": "creating",
+    "title": "Try a different shape",
+    "advice": "Choose wording or a sketch that captures who needs help and why. A good card gives people enough context to suggest several ways forward.",
+    "example": "A kitchen manager brings a sketch of a fridge shelf and one question. “Which of these trays must the morning shift use first?” The team explores shelf labels and a shift handover note.",
+    "prompt": "If we put the template aside, how would the person doing the work describe this?",
+    "sourceTitle": "Don’t worry too much about story format",
+    "related": [
+      1,
+      26
+    ]
+  },
+  {
+    "id": 3,
+    "topic": "creating",
+    "title": "Catch the change in the act",
+    "advice": "Describe something a person will start, stop or do differently. Give the team a sense of how much change would matter.",
+    "example": "Today a caretaker walks every floor to find an empty meeting room. A useful improvement would let her direct a visitor to a free room before they leave reception.",
+    "prompt": "If we watched the same person before and after release, what difference would we see?",
+    "sourceTitle": "Describe a behaviour change",
+    "related": [
+      28,
+      49
+    ]
+  },
+  {
+    "id": 4,
+    "topic": "creating",
+    "title": "Put today beside tomorrow",
+    "advice": "Once you choose a solution, write down what the system does today and what someone will observe after the change. Include the condition that triggers the new behaviour.",
+    "example": "Today a second tap on Reserve creates a second equipment booking. After the change, the second tap should show the booking the borrower already made.",
+    "prompt": "Given exactly the same input, what will someone see change?",
+    "sourceTitle": "Describe the system change",
+    "related": [
+      21,
+      24
+    ]
+  },
+  {
+    "id": 5,
+    "topic": "creating",
+    "title": "Make a bet you can lose",
+    "advice": "Identify the assumption behind a story. Find a small experiment whose cost the team can afford even if the assumption proves wrong.",
+    "example": "A repair shop wants automated collection reminders. For a week, one branch sends texts by hand and counts how many repaired items customers collect within two days.",
+    "prompt": "What could we try this week that would change our minds about building this?",
+    "sourceTitle": "Approach stories as survivable experiments",
+    "related": [
+      37,
+      49
+    ]
+  },
+  {
+    "id": 6,
+    "topic": "creating",
+    "title": "Find the person behind “user”",
+    "advice": "Name a group whose circumstances change what the story needs to do. Look for differences in experience, motivation or how people carry out the task.",
+    "example": "A regular concertgoer can follow an arrow to the balcony. Someone making their first visit needs to know that the balcony entrance is on the next street.",
+    "prompt": "Which two people covered by this role would need different things here?",
+    "sourceTitle": "Watch out for generic roles",
+    "related": [
+      19,
+      32
+    ]
+  },
+  {
+    "id": 7,
+    "topic": "creating",
+    "title": "Separate delivery from influence",
+    "advice": "Name what your team can change directly, the outcome it hopes to influence and any dependency another group controls.",
+    "example": "A parcel team can show a delivery window. Whether residents stay home is theirs to decide, and accurate windows depend on the courier sharing its latest route.",
+    "prompt": "Which part can we deliver ourselves, and whose decision will shape the result?",
+    "sourceTitle": "Evaluate zone of control and sphere of influence",
+    "related": [
+      11,
+      17
+    ]
+  },
+  {
+    "id": 8,
+    "topic": "creating",
+    "title": "Mark the closing window",
+    "advice": "Ask whether the opportunity has a real deadline. Record the date and what happens after it, so a time-sensitive story can be picked up while there is still room to act.",
+    "example": "A venue wants ticket holders to select accessible seating before the seating plan goes to print. The team marks the print deadline and works backwards to allow guests time to respond.",
+    "prompt": "What real event would make this work urgent, less valuable or too late?",
+    "sourceTitle": "Put a ‘best before’ date on stories",
+    "related": [
+      9,
+      38
+    ]
+  },
+  {
+    "id": 9,
+    "topic": "planning",
+    "title": "Give uncertainty a deadline",
+    "advice": "Pick a date by which you need evidence about a major risk. Schedule a way to test it early enough for the result to change the investment decision.",
+    "example": "A conservation team wants to lend out its audio guides. Before ordering 200 units, it tests five on the longest walking tour to see whether the batteries last a full day.",
+    "prompt": "What do we need to learn before the next expensive commitment?",
+    "sourceTitle": "Set deadlines for addressing major risks",
+    "related": [
+      5,
+      37
+    ]
+  },
+  {
+    "id": 10,
+    "topic": "planning",
+    "title": "Unpack the nearest work first",
+    "advice": "Keep distant goals broad and link them to the smaller decisions beneath them. Break the next piece down when the team is ready to act on it.",
+    "example": "A housing charity keeps “shorten the wait for repairs” as a goal. It splits missed visits into stories for the next fortnight and leaves other causes at headline level.",
+    "prompt": "Which branch needs detail for the next decision, and which can wait?",
+    "sourceTitle": "Use hierarchical backlogs",
+    "related": [
+      12,
+      45
+    ]
+  },
+  {
+    "id": 11,
+    "topic": "planning",
+    "title": "Trace each idea to an impact",
+    "advice": "Sketch a chain from the business goal to a person who affects it, then to a change in their behaviour. Group possible features under the change they might cause.",
+    "example": "A gym wants to waste fewer booked places. If members cancel earlier, the waitlist can fill them. A reminder and a one-tap cancellation link are two options on the same branch.",
+    "prompt": "Which ideas depend on the same change in someone’s behaviour?",
+    "sourceTitle": "Group stories by impact",
+    "related": [
+      3,
+      45
+    ]
+  },
+  {
+    "id": 12,
+    "topic": "planning",
+    "title": "Lay out the whole journey",
+    "advice": "Arrange the steps of an activity from left to right. Put ways of supporting each step underneath, then choose the simplest route someone could complete from end to end.",
+    "example": "For a community tool library, the route is find a drill, reserve it, collect it and bring it back. An online reservation and a paper returns log can support the first release together.",
+    "prompt": "Can someone finish the whole job with just the items in our first release?",
+    "sourceTitle": "Create a user story map",
+    "related": [
+      30,
+      39
+    ]
+  },
+  {
+    "id": 13,
+    "topic": "planning",
+    "title": "Find where action stalls",
+    "advice": "Walk through Stephen Wendel’s CREATE model. A person needs a cue, an initial reaction, a reason to act, the ability and a suitable moment before they execute the action.",
+    "example": "A volunteer notices an open shift and wants to help, but opens the invitation on a train without her rota. A reminder the evening before sign-up closes helps test whether timing is the obstacle.",
+    "prompt": "Where do people who intend to act get stuck, and what evidence points there?",
+    "sourceTitle": "Change behaviours using the CREATE funnel",
+    "related": [
+      3,
+      49
+    ]
+  },
+  {
+    "id": 14,
+    "topic": "planning",
+    "title": "Agree the rules that travel",
+    "advice": "At the start of a milestone, agree which quality expectations apply across its stories. Turn important ones into checks the team can use repeatedly.",
+    "example": "At a gallery kiosk, every route through the booking flow must clear the visitor’s details after a minute of inactivity. The team checks this rule on each screen it adds.",
+    "prompt": "What promise should hold whichever story we demonstrate?",
+    "sourceTitle": "Set out global concerns at the start of a milestone",
+    "related": [
+      29,
+      47
+    ]
+  },
+  {
+    "id": 15,
+    "topic": "planning",
+    "title": "Choose work for this stage",
+    "advice": "Agree on the biggest question facing the product at its current stage of growth. Pick a measure that tells you when it makes sense to move on.",
+    "example": "A meal-planning service attracts plenty of first-time cooks. Before spending money on referrals, it tries changes that help a cook plan a second week and tracks how many return.",
+    "prompt": "What do we need to see people do consistently before we invest in the next stage?",
+    "sourceTitle": "Prioritise according to stages of growth",
+    "related": [
+      45,
+      49
+    ]
+  },
+  {
+    "id": 16,
+    "topic": "planning",
+    "title": "Decide where to be distinctive",
+    "advice": "Ask which capabilities the business depends on and which give people a reason to choose it. These answers help decide what to build with care, buy, partner on or leave alone.",
+    "example": "A cycle courier wins work by fitting urgent deliveries into busy routes. It buys a standard invoicing service and spends its engineers’ time improving dispatch.",
+    "prompt": "Would a customer choose us for doing this exceptionally well, or would a standard option serve them?",
+    "sourceTitle": "Prioritise using purpose alignment",
+    "related": [
+      41,
+      45
+    ]
+  },
+  {
+    "id": 17,
+    "topic": "planning",
+    "title": "Look beyond the people on screen",
+    "advice": "List everyone affected by the milestone, including people who can approve or block it. Estimate their interest and influence to decide who needs to take part and who needs an update.",
+    "example": "A museum is introducing evening bookings. Visitors will use the page, but building security can veto the hours, so the team brings the duty manager into planning.",
+    "prompt": "Who could change the outcome without ever opening the product?",
+    "sourceTitle": "Make a stakeholder chart",
+    "related": [
+      7,
+      23
+    ]
+  },
+  {
+    "id": 18,
+    "topic": "planning",
+    "title": "Give the milestone a useful name",
+    "advice": "Name a release for something people will be able to do. Test every proposed story against that name to see whether it belongs in this release.",
+    "example": "A team calls its next release “Claim a lost bag from home”. Uploading a receipt fits. Redesigning the depot inventory screen can wait if the existing screen handles those claims.",
+    "prompt": "What could we tell a customer on release day that would make this milestone worth announcing?",
+    "sourceTitle": "Name your milestones",
+    "related": [
+      11,
+      19
+    ]
+  },
+  {
+    "id": 19,
+    "topic": "planning",
+    "title": "Choose who this release serves",
+    "advice": "Agree on one or two groups for the milestone. Use their needs to decide which proposals fit and which can be considered in a later release.",
+    "example": "A ticket office tackles people booking one seat on the day. Organisers reserving forty seats need deposits and seating plans, so their work gets a separate milestone.",
+    "prompt": "Whose whole experience could we improve if we narrowed the audience for this release?",
+    "sourceTitle": "Focus milestones on a limited number of user segments",
+    "related": [
+      6,
+      32
+    ]
+  },
+  {
+    "id": 20,
+    "topic": "discussing",
+    "title": "Put a pen in everyone’s hand",
+    "advice": "Use a surface everyone can change to talk through a story. Sketch, move things around and capture the decisions once the picture makes sense.",
+    "example": "A dispatcher lays three cards on the table for the vans still on the road. The driver moves one card back to the depot and shows why the proposed pickup rule breaks.",
+    "prompt": "What could we draw or move together to explain the part we keep talking past?",
+    "sourceTitle": "Use low-tech for story conversations",
+    "related": [
+      1,
+      22
+    ]
+  },
+  {
+    "id": 21,
+    "topic": "discussing",
+    "title": "Rehearse the demo early",
+    "advice": "Describe the demonstration before you start building. Agree on who is doing what, the starting conditions and what an observer should see.",
+    "example": "A nursery is adding authorised collectors. The team plans to show a named grandparent being checked in, then tries the same steps with someone whose permission expired yesterday.",
+    "prompt": "What would we put on screen to convince the person who asked for this?",
+    "sourceTitle": "Imagine the demonstration",
+    "related": [
+      4,
+      30
+    ]
+  },
+  {
+    "id": 22,
+    "topic": "discussing",
+    "title": "Let small groups compare notes",
+    "advice": "Give small groups the same story and ask each for concrete examples. Bring them together to investigate where their expected results differ.",
+    "example": "Two groups work through a cancelled workshop. One refunds everyone and the other carries over prepaid places. Comparing their examples brings an unwritten membership rule to light.",
+    "prompt": "Which example gave two groups different answers, and what assumption explains the difference?",
+    "sourceTitle": "Diverge and merge for story discussions",
+    "related": [
+      20,
+      24
+    ]
+  },
+  {
+    "id": 23,
+    "topic": "discussing",
+    "title": "Invite the missing perspective",
+    "advice": "Bring together the people who understand the need, will build the change and will test it. Add another specialist when the story calls for their experience.",
+    "example": "For a new returns label, a shop manager explains the handover, an engineer shows where the label is created and a tester asks what a second scan should do.",
+    "prompt": "Who will handle, build or check this change, and what would we miss without them?",
+    "sourceTitle": "Involve all roles in the discussion",
+    "related": [
+      17,
+      26
+    ]
+  },
+  {
+    "id": 24,
+    "topic": "discussing",
+    "title": "Ask everyone to predict the result",
+    "advice": "Close the conversation with a few fresh examples near the edge of a rule. Have everyone commit to an answer independently, then discuss any differences.",
+    "example": "For a 24-hour bike hire, everyone writes the fee for a return exactly 24 hours after collection. The answers reveal two different interpretations of when a late fee starts.",
+    "prompt": "What tricky input could we all predict independently in the next minute?",
+    "sourceTitle": "Measure alignment using feedback exercises",
+    "related": [
+      4,
+      22
+    ]
+  },
+  {
+    "id": 25,
+    "topic": "discussing",
+    "title": "Give someone the sceptic’s seat",
+    "advice": "Invite someone to challenge the proposed user, need or solution. Rotate the role so questioning a story becomes part of the team’s work.",
+    "example": "A team wants to add weekly progress emails for apprentices. The sceptic asks whether supervisors are the people asking for updates, and the team interviews both groups.",
+    "prompt": "What is the strongest reason this person might have no use for our idea?",
+    "sourceTitle": "Play the devil’s advocate",
+    "related": [
+      5,
+      28
+    ]
+  },
+  {
+    "id": 26,
+    "topic": "discussing",
+    "title": "Share the job of shaping it",
+    "advice": "Ask the sponsor to bring a person and a desired outcome. Have the delivery team suggest several ways to get there, then compare the options so the sponsor can choose.",
+    "example": "A theatre wants late arrivals seated with less disruption. The team offers seat directions on tickets, a late-arrival entrance or a reserved row. The house manager chooses the reserved row for a trial.",
+    "prompt": "If the sponsor gave us only the audience and the aim, what three approaches would we offer?",
+    "sourceTitle": "Divide responsibility for defining stories",
+    "related": [
+      2,
+      27
+    ]
+  },
+  {
+    "id": 27,
+    "topic": "discussing",
+    "title": "Keep the right people in the conversation",
+    "advice": "Settle user-facing rules with the people who know the work. Leave implementation choices for a technical discussion and bring back any trade-off that changes the user’s experience.",
+    "example": "Payroll needs to decide which pay run includes a corrected shift. Once that rule is clear, engineers can decide how to schedule the calculation without keeping payroll in the room.",
+    "prompt": "Which decision still needs someone with domain knowledge, and which can the builders make afterwards?",
+    "sourceTitle": "Split business and technical discussions",
+    "related": [
+      23,
+      26
+    ]
+  },
+  {
+    "id": 28,
+    "topic": "discussing",
+    "title": "Follow the benefit one step further",
+    "advice": "Trace how an improvement for one person might produce a benefit for the organisation. Look for the weakest assumption between those two points.",
+    "example": "A visitor who can move a museum booking avoids a phone call. That saves the museum staff time only if enough callers switch to self-service, so the team counts calls about date changes.",
+    "prompt": "What has to happen after the user succeeds for the organisation to benefit?",
+    "sourceTitle": "Investigate value on multiple levels",
+    "related": [
+      3,
+      11
+    ]
+  },
+  {
+    "id": 29,
+    "topic": "discussing",
+    "title": "Find the useful range",
+    "advice": "Use QUPER to identify when a quality becomes usable, when it offers an advantage and when further gains stop mattering. Compare those thresholds with the points where costs jump.",
+    "example": "Pickers say a stock lookup is usable in three seconds and feels instant at one. Getting below half a second would mean buying new handhelds, so the team tests whether anyone notices the difference.",
+    "prompt": "At what point would users notice the improvement, and where would the next step in cost occur?",
+    "sourceTitle": "Discuss sliding-scale measurements with QUPER",
+    "related": [
+      14,
+      34
+    ]
+  },
+  {
+    "id": 30,
+    "topic": "splitting",
+    "title": "Work backwards from a decision",
+    "advice": "Find something a person needs to see before they can act. Trace the smallest useful version of that output back to the data and processing it needs.",
+    "example": "A depot supervisor needs a morning list of missed collections. Yesterday’s route log already has enough data for a first version while the dispatch system is being replaced.",
+    "prompt": "Which decision could someone make with just one piece of the proposed output?",
+    "sourceTitle": "Start with the outputs",
+    "related": [
+      12,
+      36
+    ]
+  },
+  {
+    "id": 31,
+    "topic": "splitting",
+    "title": "Borrow the missing machinery",
+    "advice": "Give people a working service with a temporary way to run it behind the scenes. Learn from real use before investing in the permanent parts.",
+    "example": "Ten residents book bulky-waste collections through a new form. A coordinator places those bookings in the crew diary by hand while the team learns which slots people actually want.",
+    "prompt": "Which part could we handle by hand for the first ten users?",
+    "sourceTitle": "Forget the walking skeleton – put it on crutches",
+    "related": [
+      5,
+      35
+    ]
+  },
+  {
+    "id": 32,
+    "topic": "splitting",
+    "title": "Find a smaller audience",
+    "advice": "Look for a group whose circumstances remove a whole chunk of work. Give that group something they can use from start to finish.",
+    "example": "Single-site cafés can renew a supplier order with one delivery address. Serving them first lets the team learn about reorders while multi-site billing waits.",
+    "prompt": "Who could use this happily even if its most expensive feature were missing?",
+    "sourceTitle": "Narrow down the customer segment",
+    "related": [
+      6,
+      34
+    ]
+  },
+  {
+    "id": 33,
+    "topic": "splitting",
+    "title": "Find one useful difference",
+    "advice": "For a large technical change, list specific things someone could do once it worked. Pick one and follow it through the fewest parts of the system possible.",
+    "example": "A new search engine promises better matching. The team first uses it just for misspelt street names in the delivery desk’s lookup tool.",
+    "prompt": "Who could point to one task the proposed technical work would make easier?",
+    "sourceTitle": "Split by examples of usefulness",
+    "related": [
+      28,
+      30
+    ]
+  },
+  {
+    "id": 34,
+    "topic": "splitting",
+    "title": "Turn the volume down",
+    "advice": "Set a lower limit on volume, frequency or file size that still works for someone. Each increase in capacity can become a later slice.",
+    "example": "A survey tool can already analyse 500 responses overnight. A small museum can use it for visitor feedback while national campaigns wait for larger imports.",
+    "prompt": "At what volume would this already earn its place in someone’s working day?",
+    "sourceTitle": "Split by capacity",
+    "related": [
+      29,
+      32
+    ]
+  },
+  {
+    "id": 35,
+    "topic": "splitting",
+    "title": "Use a fixed list first",
+    "advice": "When a live data connection is holding up useful work, look for reference values that rarely change. Agree who will check the initial list and when it needs updating.",
+    "example": "A theatre starts its equipment-booking form with its four rehearsal rooms listed by hand. Touring venues can join once the directory connection is ready.",
+    "prompt": "Which values could we confirm with their owner and supply once for the pilot?",
+    "sourceTitle": "Start with dummy, then move to dynamic",
+    "related": [
+      31,
+      38
+    ]
+  },
+  {
+    "id": 36,
+    "topic": "splitting",
+    "title": "Deliver in the simplest format",
+    "advice": "Ask the person receiving a result which format they can use today. Get the information right in that format, then add other ways to deliver it.",
+    "example": "A buyer needs to know which stock will expire this week. A plain table she can paste into her ordering sheet covers the morning round while a branded PDF can wait.",
+    "prompt": "What is the simplest output someone could take straight into their next task?",
+    "sourceTitle": "Simplify outputs",
+    "related": [
+      30,
+      38
+    ]
+  },
+  {
+    "id": 37,
+    "topic": "splitting",
+    "title": "Give the unknown its own story",
+    "advice": "Separate a question that needs investigation from the feature that might follow. Give the investigation a time limit and agree what decision its findings will support.",
+    "example": "Before promising offline scanning, a warehouse team spends an afternoon testing two handsets in the cold store. The result decides which model, if either, to pilot.",
+    "prompt": "What decision must we be able to make when the investigation ends?",
+    "sourceTitle": "Split learning from earning",
+    "related": [
+      5,
+      9
+    ]
+  },
+  {
+    "id": 38,
+    "topic": "splitting",
+    "title": "Make the job possible once",
+    "advice": "Identify the least a person needs to complete the task safely. Put shortcuts, defaults and bulk actions into later slices once someone has tried the basic route.",
+    "example": "A lab can issue a corrected specimen label one at a time before the audit. Printing a whole tray in one go can follow after technicians try the correction process.",
+    "prompt": "What is the simplest way one person could complete one real job by the deadline?",
+    "sourceTitle": "Extract basic utility",
+    "related": [
+      8,
+      39
+    ]
+  },
+  {
+    "id": 39,
+    "topic": "splitting",
+    "title": "Assemble one workable route",
+    "advice": "List the steps in an oversized workflow. For each step, sketch a few ways to meet the quality needed, then choose a combination that makes one complete, useful journey.",
+    "example": "For workshop bookings, the team lays out sign-up, confirmation and attendance. A web form, a manual confirmation and a printed register are enough to run the first event.",
+    "prompt": "Which combination of options would let us run the whole journey once?",
+    "sourceTitle": "When all else fails, slice the hamburger",
+    "related": [
+      12,
+      38
+    ]
+  },
+  {
+    "id": 40,
+    "topic": "delivering",
+    "title": "Give upkeep a place",
+    "advice": "Agree how much team time to reserve for maintenance and interruptions. Record that work in words the people doing it recognise.",
+    "example": "A team reserves Thursday mornings to fix flaky builds and rotate support duties. At the end of the month they check whether that allowance matches the demand.",
+    "prompt": "Which recurring work takes time every week but has no place in our plan?",
+    "sourceTitle": "Don’t push everything into stories",
+    "related": [
+      41,
+      43
+    ]
+  },
+  {
+    "id": 41,
+    "topic": "delivering",
+    "title": "Name the budget first",
+    "advice": "Agree what an outcome is worth in time or money. Invite the team to find a useful change inside that budget and keep the scope negotiable.",
+    "example": "A booking team can spend four days reducing missed appointments before a holiday rush. A reminder in the existing confirmation email fits that investment.",
+    "prompt": "How much would it be sensible to spend on this result?",
+    "sourceTitle": "Budget instead of estimate",
+    "related": [
+      16,
+      38
+    ]
+  },
+  {
+    "id": 42,
+    "topic": "delivering",
+    "title": "Size by comparison",
+    "advice": "Choose a few recently delivered stories as reference points. A small set of labels can flag work that needs splitting or more investigation.",
+    "example": "The team compares a new address lookup with two recent changes. They agree it belongs in the “needs splitting” pile and turn to the part that makes it large.",
+    "prompt": "Which completed story makes a good reference for this one?",
+    "sourceTitle": "Avoid using numeric story sizes",
+    "related": [
+      33,
+      43
+    ]
+  },
+  {
+    "id": 43,
+    "topic": "delivering",
+    "title": "Count what usually gets finished",
+    "advice": "Use a rolling average of recently finished, roughly comparable stories to plan the next iteration. Revisit the window as the team or its work changes.",
+    "example": "A team finished five, seven and six small fixes in its last three iterations. Six is a starting point for the next discussion, adjusted for a colleague’s leave.",
+    "prompt": "How many similar stories have we actually finished in a typical recent iteration?",
+    "sourceTitle": "Estimate capacity based on rolling number of stories",
+    "related": [
+      42,
+      44
+    ]
+  },
+  {
+    "id": 44,
+    "topic": "delivering",
+    "title": "Let discussion time guide capacity",
+    "advice": "If understanding the business rules is usually the hardest part, try a fixed refinement window. Plan from the stories the team can explain together when the window closes.",
+    "example": "During a returns workshop, four cases become clear but overseas exchanges are still disputed. The team takes the four and books a separate conversation about exchanges.",
+    "prompt": "Which stories are clear enough to take on when our discussion time runs out?",
+    "sourceTitle": "Estimate capacity based on analysis time",
+    "related": [
+      24,
+      43
+    ]
+  },
+  {
+    "id": 45,
+    "topic": "delivering",
+    "title": "Choose which outcome comes first",
+    "advice": "Ask stakeholders to pick one change in the world that deserves attention now. Compare the candidate stories by how directly and cheaply they might bring it about.",
+    "example": "A library chooses fewer missed reservations as its next goal. That gives a reminder experiment priority over a quicker way to catalogue donations.",
+    "prompt": "If we could move only one outcome this month, which one would we choose?",
+    "sourceTitle": "Pick impacts instead of prioritising stories",
+    "related": [
+      11,
+      46
+    ]
+  },
+  {
+    "id": 46,
+    "topic": "delivering",
+    "title": "Make room for a genuine later",
+    "advice": "When a new request arrives, ask what it would displace. Give the requester a way to revisit it, or to make the case for changing the current goal.",
+    "example": "A venue asks for a seating-chart redesign while the team is fixing double bookings. They agree to revisit it after the next booking review unless there is a reason to switch goals sooner.",
+    "prompt": "Is this important enough to change our current goal, and when should we look at it again?",
+    "sourceTitle": "Never say ‘no’ – say ‘not now’",
+    "related": [
+      18,
+      45
+    ]
+  },
+  {
+    "id": 47,
+    "topic": "delivering",
+    "title": "Separate discovery from visual consistency",
+    "advice": "Explore unfamiliar user problems early with the people who experience them. Give the delivery team examples and checks for familiar design decisions it can handle itself.",
+    "example": "A designer studies how supervisors approve shift swaps. Meanwhile, the team uses an agreed checklist for labels, undo and error messages on the existing rota screens.",
+    "prompt": "Which decision needs time with a user, and which can our existing design guidance settle?",
+    "sourceTitle": "Split UX improvements from consistency work",
+    "related": [
+      14,
+      48
+    ]
+  },
+  {
+    "id": 48,
+    "topic": "delivering",
+    "title": "Invite people into a redesign",
+    "advice": "Offer a clear reason to try a new interface and an easy route back. Learn what happens when people use it for real work.",
+    "example": "Dispatchers who want saved filters can switch on a new route planner. They can return to the familiar view mid-shift and tell the team what got in their way.",
+    "prompt": "What would make the first volunteers want to try the new version tomorrow?",
+    "sourceTitle": "Get end-users to opt in to large user interface changes",
+    "related": [
+      5,
+      49
+    ]
+  },
+  {
+    "id": 49,
+    "topic": "delivering",
+    "title": "Watch the outcome after release",
+    "advice": "Before building, agree how to tell whether the change helped. After release, watch someone do the task and compare what happens with what the team expected.",
+    "example": "An upload indicator was meant to reduce duplicate submissions. Watching two claimants reveals that both tap again when the final confirmation takes several seconds.",
+    "prompt": "Whom can we watch using this, and what would count as an improvement?",
+    "sourceTitle": "Check outcomes with real users",
+    "related": [
+      3,
+      28
+    ]
+  },
+  {
+    "id": 50,
+    "topic": "delivering",
+    "title": "Retire the finished story",
+    "advice": "Move lasting rules and tests into the place people look for current behaviour. Once the knowledge is there, archive the story that introduced the change.",
+    "example": "After a renewal discount changes twice, the team puts the current rule and examples beside the pricing tests. A new colleague can now answer a pricing question in one place.",
+    "prompt": "What must a future teammate still be able to find after we close this story?",
+    "sourceTitle": "Throw stories away after they are delivered",
+    "related": [
+      4,
+      14
+    ]
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "agile-better-stories",
+  "compatibility_date": "2026-11-24",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "agile-better-stories.courses.bitshield.dev",
+      "custom_domain": true
+    }
+  ]
+}

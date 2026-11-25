@@ -1,0 +1,6 @@
+/health
+  Content-Type: text/plain; charset=utf-8
+
+# Astro names these files by content hash, so they can be cached for a year.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

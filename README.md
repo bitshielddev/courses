@@ -1,6 +1,6 @@
 # C / Field Manual courses
 
-Interactive field manuals for programming and product teams. Each course is a static site on its own Cloudflare Worker and subdomain. The programming courses share a lesson engine and also open straight from disk (`file://`). The Agile short course uses Astro and has its own local development commands.
+Interactive field manuals for programming and product teams. Each course is a static site on its own Cloudflare Worker and subdomain. The programming courses share a lesson engine and also open straight from disk (`file://`). The Agile courses use Astro and have their own local development commands.
 
 Browse the [course catalog](https://courses.bitshield.dev/) for live courses and courses in development. The [catalog project](catalog/README.md) is a separate Astro site.
 
@@ -10,6 +10,7 @@ Browse the [course catalog](https://courses.bitshield.dev/) for live courses and
 | [Anatomy of a Neovim save](courses/c-inotify/README.md): systems project 01. Build an inotify monitor in C on NixOS and use it to find out what `:w` does. | lab | https://c-inotify.courses.bitshield.dev | [index.html](courses/c-inotify/index.html) |
 | [Rust / Field Manual](courses/rust-intro/README.md): Rust for programmers who know Python, PHP or TypeScript. 24 lessons on ownership, borrowing and the rest of the language, with questions and graded challenges. | compiler (Rust) | https://rust-intro.courses.bitshield.dev | [index.html](courses/rust-intro/index.html) |
 | [Lean / Field Manual](courses/lean-intro/README.md): proving programs correct in Lean 4, for programmers who know Python. 16 lessons, each with a lab that Lean itself checks. | lab | https://lean-intro.courses.bitshield.dev | [index.html](courses/lean-intro/index.html) |
+| [Story Atlas](courses/agile-better-stories/README.md) is an interactive field guide to 50 ideas for writing, discussing and splitting user stories. | Astro field guide | https://agile-better-stories.courses.bitshield.dev | [Local setup](courses/agile-better-stories/README.md) |
 | [User Story Mapping](courses/agile-user-story-mapping/README.md) takes a team from a one-line request to a story map, a first release and a build plan in nine lessons, with a cheat sheet and a team workshop. | Astro short course | https://agile-user-mapping-stories.courses.bitshield.dev | [Local setup](courses/agile-user-story-mapping/README.md#local-development) |
 
 A course using the shared lesson engine is in one of two **modes**, set by `data-mode` on its page's `<body>`:

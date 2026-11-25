@@ -1,0 +1,33 @@
+---
+import '../styles/atlas.css';
+import atlasMark from '../assets/atlas-mark.svg?url';
+---
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" type="image/svg+xml" href={atlasMark} />
+    <title>Page not found · Story Atlas</title>
+  </head>
+  <body>
+    <div class="page">
+      <header class="mast">
+        <a class="brand" href="/"><span class="brandmark" aria-hidden="true"></span>Agile Better Stories</a>
+      </header>
+      <main>
+        <h1>Page not found</h1>
+        <p>Open the atlas to browse all 50 ideas or search for the one you wanted.</p>
+        <a class="draw" href="/">Return to Story Atlas</a>
+      </main>
+    </div>
+  </body>
+</html>
+
+<style>
+  a { text-decoration: none; }
+  main { max-width: 36rem; padding-block: clamp(3rem, 9vw, 7rem); }
+  h1 { font: 400 clamp(3.75rem, 10vw, 6rem)/1 var(--serif); margin: 0; }
+  p { font-size: 1.15rem; line-height: 1.55; margin-block: 1rem 1.75rem; }
+</style>
